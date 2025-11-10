@@ -22,7 +22,7 @@ def state0():
             from pathlib import Path
             # All the imports go here.
 
-        expect exeptions as e:      
+        expept exeptions as e:      
             if e is not None:                                           
                 print(f"following error was found: {e} . Aborting execution.")
                 print("early diagnostics: problem was found in main.py, in the initialisation of state0. Possible culprints:")
@@ -35,11 +35,12 @@ def state0():
         # Now comes the projekt init
         
         while True:                                                                         
-            global dir = input("input path to work directory.")     
+            global dir 
+            dir = input("input path to work directory.")     
             d = Path(dir)
             print("initialising at {dir}")                  
             
-            if my_dir.exists():
+            if d.exists():
                 print("directory found. Continuing")
                 pass
             else:
@@ -56,16 +57,24 @@ def state0():
 
         while True:
             
-            for name in global projekt_parts:
-                file_path = global dir / name
-                if file_path.exists() and file_path.is_file():
+            global flag_file_not_found
+            global projekt_parts
+            global dir
+
+            for name in projekt_parts:
+                file_path = Path(dir / name)
+                if file_path.exist() and file_path.is_file():
                     pass
                 else:
                     print(f"file {name} not found.")
+                    if flag_file_not_found == None: 
+                        flag_file_not_found = 0
+                    else:
+                        flag_file_not_found =+ 1
                     
             
             # if True, break, if false, pass.
-
+            if flag_file_not_found != None
             print("Projekt not found on {global dir}")
             if input("initialise an empty projekt?") == "Yes" or "Y":                                                                   # The list of required files.
                 # Initialise the empty projekt.
@@ -77,5 +86,6 @@ def state0():
 
 
     # Double check everything.                              
-    global state = 1
+    global state 
+    state = 1
     return None
