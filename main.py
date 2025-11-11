@@ -1,3 +1,4 @@
+# This is my main file. 
 """
 main.py of NullLab-mini projekt.
 This is my Structured auto coder projekt. 
@@ -31,9 +32,13 @@ This is pre state globals, and some basics.
 mygo is the library I use for the goto funktion, since I may need it, I keep it here. 
 I will delete it the moment I make sure I dont need it here.
 Every goto use case will be clearly documented, in order to not cause spagetti code. 
+UPDATE: mygo didnt work, so I removed the line.
+I will use it the moment I have to deal with confusing loop heuristics again!!!!
 """
 
-from mygo import enable_goto, label, goto
+# from mygo import enable_goto, label, goto
+
+
 
 # I coded this from a mobile device, so have some respect of this work !!!
 
@@ -59,27 +64,25 @@ TODO: FUTURE: add a configuration option that loads you into a projekt instantly
 def state0():   
     while True:
         
-        global e
+        global exep
 
         print("initialising NullLab-mini")
         print("import sequense beginns now.")
-        Try:
+        
+        # Gracefull handling of missing dependancies. 
+
+        try:
             from pathlib import Path
-            #!!! All the imports go here.
             
-            # for now the only library I use it path, but it will grow as I code more and more stuff. 
+            # All the imports go here. This block handles missing dependancies gracefully, and tells the user about them. 
 
-        expept exeptions as e:      
-            if e is not None:                                           
-                global e
-                print(f"following error was found: {e} . Aborting execution.")
-                print("early diagnostics: problem was found in main.py, in the initialisation of state0. Possible culprints:")
-                print("Python dependancies, partial installation, broken installation.")
-                raise RuntimeError(f"Failed to initialise. {e}")
+        except ImportError as exep:
+            raise RuntimeError(f"missing dependancy {exep}. Install it to use the programm.") from exep
 
-            # I spend a lot of time coding this.
+        """
+        The import should be in try expect with proper handling of missing imports, but it didnt work for some reason, so I just cut it out. 
+        """
 
-        #!!! import sequence completed
         print("early initialisation complete.")
         
         #!!! Now comes the projekt init
@@ -89,6 +92,7 @@ def state0():
         # Goto may have made this way cleaner then this, but whatever, python doesnt have good goto support. 
 
         while True:                                                                         
+            
             global base_dir 
             
             input_dir = input("input path to work directory.")     
@@ -114,7 +118,7 @@ def state0():
             
             global flag_file_not_found
             global projekt_parts
-            global base_dir                     # Yes, I slapped those everywhere, because I dont really get how these work, I will separate by name most of the time anyway. 
+            # Yes, I slapped those everywhere, because I dont really get how these work, I will separate by name most of the time anyway. 
 
             for name in projekt_parts:
                 file_path = base_dir / name
@@ -130,8 +134,6 @@ def state0():
             
             # if True, break, if false, pass.
             if flag_file_not_found != None:
-                global base_dir
-                global projekt_parts
                 print(f"Projekt not found on {dir}")
                 if input("initialise an empty projekt?") == "Yes" or "Y":              # Init of an empty projekt.                                                      # The list of required files.
                     
@@ -151,20 +153,29 @@ def state0():
             if flag_retry != 1:         # Like, why the fuck do I need to do this? Why doesnt python support loop labels?
                 flag_retry = 0          # I will switch to rust after this. I hate this!!!!
                 break
-
+            else:
+                global flag_state_0_complete
+                flag_state_0_complete = 1
+                break
+        if flag_state_0_complete == 1:
+            break
 
     #TODO Double check everything. 
     # Or not. Dont really know myself how to nor what for. 
 
+
     global state 
     state = 1
     
-    if e is not None:
-        print(f"Init encountered following problems: {e}")
-        return None
-    else:                                                  # This is just final report about the states performance. More info is better then less info, since this crap will flood the screen anyways. 
-        return True       # True means sucsess, False or crash means fatal error, None means unknown error scale. 
-
+    return True       # True means sucsess, False or crash means fatal error, None means unknown error scale. 
+    
+"""
+There is a problem with error handling, and that is that I dont get how it works. I will implement that at some point, but for now its not present.
+The programm just crashes if an error occures, for the user to fix. 
+This will be improoved later on.
+"""
+    
+# TODO: Implement error handling. 
 
 # ----------------------------------------------------------------------------------------------------------------
 
@@ -185,4 +196,55 @@ Done for today!!!
 #TODO: make shemas for json. 
 
 def state1():
-    #Later.
+    while True:
+        
+
+
+
+# --------------------------------------------------------------------------------
+
+"""
+This is state 2, the implementation state. It will just be a for loop of API calls and DataBase saves. 
+"""
+
+def state2():
+    pass
+
+
+
+
+
+
+# --------------------------------------------------------------------------------
+
+"""
+This is state 3, the debugging state. 
+This is gonna be a set of for loops, with a bunch of json saves. 
+"""
+
+def state3():
+    pass
+
+
+
+# --------------------------------------------------------------------------------
+"""
+This is the state mashine, that transmits the states. 
+All the logic is inside states. 
+States manage transmition themself. 
+States management is inside states. 
+This is just a small script. 
+"""
+
+
+while True:
+    if state == 0:
+        state0()
+    if state == 1:
+        state1()
+    if state == 2:
+        state2()
+    if state == 3:
+        state3()
+    else:
+        raise RuntimeError("STATE MASHINE BROKE. SHUTTING DOWN. CRITICAL ERROR.")
