@@ -39,9 +39,6 @@ I will use it the moment I have to deal with confusing loop heuristics again!!!!
 # from mygo import enable_goto, label, goto
 
 
-
-# I coded this from a mobile device, so have some respect of this work !!!
-
 # Lets get this fun little thingy.
 
 base_dir = None
@@ -144,38 +141,31 @@ def state0():
                             print(f"created file {file}")
                         else:
                             print(f"file {file} already existed. Ignoring.")   # I think this is pretty good design. 
-
-                    break
+                    
+                    break # This one breaks the loop 2.
                 else:
                     global flag_retry   # I hate flags. 
                     flag_retry = 1
                     break
-            if flag_retry != 1:         # Like, why the fuck do I need to do this? Why doesnt python support loop labels?
-                flag_retry = 0          # I will switch to rust after this. I hate this!!!!
-                break
-            else:
-                global flag_state_0_complete
-                flag_state_0_complete = 1
-                break
-        if flag_state_0_complete == 1:
-            break
-
-    #TODO Double check everything. 
-    # Or not. Dont really know myself how to nor what for. 
+        if flag_retry == 1:         # Like, why the fuck do I need to do this? Why doesnt python support loop labels?
+            flag_retry = 0          # I will switch to rust after this. I hate this!!!!
+            continue
+        else:
+            break # This one breaks loop 1.
 
 
     global state 
-    state = 1
+    state = 1    # This one switches the state. 
     
     return True       # True means sucsess, False or crash means fatal error, None means unknown error scale. 
     
 """
-There is a problem with error handling, and that is that I dont get how it works. I will implement that at some point, but for now its not present.
-The programm just crashes if an error occures, for the user to fix. 
-This will be improoved later on.
+The error handling was implemented. The Import errors are now able to be 
+catched, and then displayed, insdead of sshowing them one by one
+as the normal python error traceback does. 
+
+This is my way to handle errors, wich is just a clean error messenge / s .
 """
-    
-# TODO: Implement error handling. 
 
 # ----------------------------------------------------------------------------------------------------------------
 
@@ -197,7 +187,11 @@ Done for today!!!
 
 def state1():
     while True:
-        
+        pass
+        # My current plan : 
+        # TODO: implement LMIA_context_mini
+        # TODO: learn to script tmux
+        # TODO: Implement the final thingy. 
 
 
 
@@ -247,4 +241,4 @@ while True:
     if state == 3:
         state3()
     else:
-        raise RuntimeError("STATE MASHINE BROKE. SHUTTING DOWN. CRITICAL ERROR.")
+        raise RuntimeError("STATE MASHINE BROKE. SHUTTING DOWN. CRITICAL ERROR. IDK what the fuck happened here. ")

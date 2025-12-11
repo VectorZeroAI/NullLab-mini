@@ -1,0 +1,41 @@
+{
+    "full_workflow_description": "workflow",
+    "modules": [
+        {
+            "module_name": "Insert ModuleName",
+            "main_function": {
+                "name": "insert funktion name",
+                "workflow": "inser funktion high level workflow here",
+                "return": "insert the returned values, what they mean, and their types. ",
+                "depends_on": ["list", "of", "funktions", "and", "modules", "this", "funktion", "depends", "on"]
+            },    
+            
+            "funktions": [
+                {
+                    "name": "insert funktion name",
+                    "workflow": "inser funktion high level workflow here",
+                    "return": "insert the returned values, what they mean, and their types. ",
+                    "depends_on": ["list", "of", "funktions", "and", "modules", "this", "funktion", "depends", "on"]
+                }
+            ],
+            "requirements": [
+                {
+                    "import_name": "Library or module name here",
+                    "use_cases": [
+                        {
+                            "funktion": "Insert funktion name here",
+                            "workflow": "Insert funktion workflow here",
+                            "note": "Insert How? Why? Where? here."
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "dependancy_graph": [
+        {
+            "funktion_name": "name",
+            "depends_on": "funktion_name" 
+        }
+    ]
+}
