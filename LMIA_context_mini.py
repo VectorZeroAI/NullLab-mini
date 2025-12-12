@@ -92,6 +92,7 @@ class LMIA_context_mini:
         self.embedder = SentenceTransformer("all-MiniLM-L6-v2")
 
         print("init state is over")
+        return True
 
     def input_context(self, prompt, origin):
         print(f"prompt {prompt} recived")
@@ -129,6 +130,8 @@ class LMIA_context_mini:
  
             print("sucsessfully prepared embedding and ai response into the corresponding places inside the SQLite DB")
  
+        elif origin == 0:
+            self.curr.execute("INSERT INTO memory (ai_response) VALUES (?)", (prompt,))
         else:
             raise RuntimeError(f"YOU ARE AN IDIOT! INVALID origin. Expected values are 1 or 0, got value {origin}")
         
@@ -171,4 +174,13 @@ class LMIA_context_mini:
         This way, we get the corresponding rows from inside SQLite. 
         This is half the job of creating the output done. 
         """
+        print("sucsessfully innputed the data.")
+        print("proseeding with embedding.")
+
+    def get_context(self, prompt):
+        pass
+        # This is supposed to be the funktion for getting the context
+        # This is where the core logic of the programm is located at. 
+        # TODO: FINISH THIS
+
 

@@ -43,9 +43,15 @@ extandable amount of rows, stable amount of collums.
 1. UUID PRIMARY KEY AUTOINCREMENT
 2. user_prompt TEXT
 3. ai_response TEXT
+<<<<<<< HEAD
 4. embedded_user_prompt BLOB
 5. embedded_ai_response BLOB
 6. timestamp TIMESTAMP
+=======
+4. embedded_user_prompt *whatever the fuck the embedding is*
+5. embedded_ai_response *whatever the fuck the embedding is*
+6. timestamp TIMESTAMP *or however its actually called.*
+>>>>>>> 972256a4674e34a92813b35f16fc8494725c7a25
 
 ### Context retrieval method
 
@@ -54,6 +60,7 @@ The method is clever:
 2 most similar user prompts + the AI responses to them + 3 most similar AI responses to each one of those + 5 last messenges. 
 
 The actually numbers should be config tweakable, but I will implement that in the next version. #TODO: IMPLEMENT configurable numbers
+<<<<<<< HEAD
 
 #### The actual funktion architecture:
 Execution audict (for future me to understand the fuck its doing)
@@ -62,3 +69,5 @@ Execution audict (for future me to understand the fuck its doing)
 3. Then define the similarity_list, that is used to gather all the similarities. **Important**: DONT OVERWRITE THE ORIGINAL LIST, else there is no way in hell to know from wich ROW the embedding was from.
 4. The loop through the list of the fetched user prompt embeddings to get similarity, and append every similarity to the similarity_list.
 5. Then get the biggest embedding out of the list. 
+=======
+>>>>>>> 972256a4674e34a92813b35f16fc8494725c7a25
