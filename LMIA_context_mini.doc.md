@@ -54,3 +54,11 @@ The method is clever:
 2 most similar user prompts + the AI responses to them + 3 most similar AI responses to each one of those + 5 last messenges. 
 
 The actually numbers should be config tweakable, but I will implement that in the next version. #TODO: IMPLEMENT configurable numbers
+
+#### The actual funktion architecture:
+Execution audict (for future me to understand the fuck its doing)
+1. First, fetch all the embedded_user_prompt BLOBs
+2. Then convert them to proper numpy arrays. **Important** Dont fuck up the order.
+3. Then define the similarity_list, that is used to gather all the similarities. **Important**: DONT OVERWRITE THE ORIGINAL LIST, else there is no way in hell to know from wich ROW the embedding was from.
+4. The loop through the list of the fetched user prompt embeddings to get similarity, and append every similarity to the similarity_list.
+5. Then get the biggest embedding out of the list. 

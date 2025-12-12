@@ -14,6 +14,9 @@ from pathlib import Path
 from sentence_transformers import SentenceTransformer
 import sqlite3
 import numpy as np
+from sentence_transformers import util
+from sentence_transformers.util import similarity
+import heapq
 
 class LMIA_context_mini:
 
@@ -53,7 +56,7 @@ class LMIA_context_mini:
                     self.curr = self.conn.cursor()
 
                 except RuntimeError as e:
-                    print("failed. Errors: {e}")
+                    print(f"failed. Errors: {e}")
                     raise RuntimeError("FATAL. Aborting execution.")
 
             elif action == "0":
@@ -89,8 +92,6 @@ class LMIA_context_mini:
         self.embedder = SentenceTransformer("all-MiniLM-L6-v2")
 
         print("init state is over")
-        
-        return True
 
     def input_context(self, prompt, origin):
         print(f"prompt {prompt} recived")
@@ -136,9 +137,38 @@ class LMIA_context_mini:
         print("sucsessfully inputed the data.")
 
     def get_context(self, prompt):
-        pass
-        # This is supposed to be the funktion for getting the context
-        # This is where the core logic of the programm is located at. 
-        # TODO: FINISH THIS
+        embedded_prompt_to_compare_to = self.embedder.encode(prompt)
+        binary_list_of_user_prompt_embeddings = self.curr.execute("""
+            SELECT embedded_user_prompt FROM memory;
+        """).fetchall()
+        # A list to track similarity. 
+        global similarity_list
+        global embeddings_list
+        # Global because I dont want to end up with ... "undefined behaviour".
+        embeddings_list = []
+        similarity_list = []
 
+        # The iteration through every row.
+        for binary in binary_list_of_user_prompt_embeddings:
+            embedded_user_prompt = np.frombuffer(binary, dtype=np.float32)
+            embeddings_list.append(embedded_user_prompt)
+            # np.frombuffer(blob, dtype=np.float32)
+            # This funktion is the converter from BLOB to numpy. !IMPORTANT
+        # This piece of code creates the list of embeddings, not binaries. The order is the same. The order is important.
+
+        for emb in embeddings_list:
+            sim = util.cos_sim(embedded_prompt_to_compare_to, emb).item()
+            similarity_list.append(sim)
+
+        # This piece of code just calculates the similarity of each element, and appends it to a list. 
+        # The order is the same. 
+
+        most_similar_user_prompts = heapq.nlargest(2, similarity_list)
+        """
+        Now we have 2 lists, the embeddings_list, the similarity_list, and the binary_list . 
+        We need to find the row, e.g. the index number of the 2_most_similar_user_prompt s in the list. 
+        Because the order was never changed, the index inside similarity_list = index in binary_list, wich = the row number, + - 1, due to starts on 1 or 0. 
+        This way, we get the corresponding rows from inside SQLite. 
+        This is half the job of creating the output done. 
+        """
 
