@@ -174,13 +174,18 @@ class LMIA_context_mini:
         This way, we get the corresponding rows from inside SQLite. 
         This is half the job of creating the output done. 
         """
-        print("sucsessfully innputed the data.")
-        print("proseeding with embedding.")
+        global row_numbers
+        row_numbers = []
+        for i in most_similar_user_prompts:
+            row_numbers.append(similarity_list.index(i) + 1)        # +1 , because SQLite is 1 based, and lists are 0 based. 
+        """
+        Now that we have the index nummer, we can grab the row from the SQLite DB, and prossed with the the output creaation. 
+        """
+        for row in row_numbers:
+            self.curr.execute("""
+            SELECT 
+            """)
 
-    def get_context(self, prompt):
-        pass
-        # This is supposed to be the funktion for getting the context
-        # This is where the core logic of the programm is located at. 
-        # TODO: FINISH THIS
+        return f"{}"
 
 
