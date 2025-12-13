@@ -11,11 +11,9 @@ PLAN:
 
 # Imports
 from pathlib import Path
-from sentence_transformers import SentenceTransformer
+from sentence_transformers import SentenceTransformer, util
 import sqlite3
 import numpy as np
-from sentence_transformers import util
-from sentence_transformers.util import similarity
 import heapq
 
 class LMIA_context_mini:
@@ -28,11 +26,12 @@ class LMIA_context_mini:
             try:
                 self.conn = sqlite3.connect(DB_file)
                 self.curr = self.conn.cursor()
-            except RuntimeError as e:
+            except sqlite3.Error as e:
                 print(f"file found under {DB_path} , but unable to connect to. {e}")
                 action = None
                 action = input("delete it and reinitialise? Yes means delete and reinitialise the DB, No means aborting execution.")
-                if action == "Yes" or action == "Y" or action == "yes" or action == "YES":
+                action = action.lower()
+                if action == "yes" or action == "y":
                     DB_file.unlink() # This means delete
                     DB_file.touch()
                     self.conn = sqlite3.connect(DB_file)
@@ -55,7 +54,7 @@ class LMIA_context_mini:
                     self.conn = sqlite3.connect(DB_path)  # This is just connecting
                     self.curr = self.conn.cursor()
 
-                except RuntimeError as e:
+                except OSError as e:
                     print(f"failed. Errors: {e}")
                     raise RuntimeError("FATAL. Aborting execution.")
 
@@ -92,7 +91,6 @@ class LMIA_context_mini:
         self.embedder = SentenceTransformer("all-MiniLM-L6-v2")
 
         print("init state is over")
-        return True
 
     def input_context(self, prompt, origin):
         print(f"prompt {prompt} recived")
@@ -110,7 +108,7 @@ class LMIA_context_mini:
                 WHERE UUID = (SELECT UUID FROM memory WHERE embedded_user_prompt IS NULL ORDER BY UUID DESC LIMIT 1)
                 """, (self.embedded_prompt,))
             # COMMIT IS DONE OUTSIDE THE IF STATEMENT
-            print("sucsessfully prepared embedding and user prompt into the corresponding places inside the SQLite DB")
+            print("successfully prepared embedding and user prompt into the corresponding places inside the SQLite DB")
         elif origin == 0:
             self.curr.execute(""" 
                 UPDATE memory
@@ -129,11 +127,8 @@ class LMIA_context_mini:
                 """, (self.embedded_prompt,))
  
             print("sucsessfully prepared embedding and ai response into the corresponding places inside the SQLite DB")
- 
-        elif origin == 0:
-            self.curr.execute("INSERT INTO memory (ai_response) VALUES (?)", (prompt,))
         else:
-            raise RuntimeError(f"YOU ARE AN IDIOT! INVALID origin. Expected values are 1 or 0, got value {origin}")
+            raise RuntimeError(f"INVALID origin. Expected values are 1 or 0, got value {origin}")
         
         self.conn.commit()
         
@@ -145,15 +140,12 @@ class LMIA_context_mini:
             SELECT embedded_user_prompt FROM memory;
         """).fetchall()
         # A list to track similarity. 
-        global similarity_list
-        global embeddings_list
-        # Global because I dont want to end up with ... "undefined behaviour".
         embeddings_list = []
         similarity_list = []
 
         # The iteration through every row.
         for binary in binary_list_of_user_prompt_embeddings:
-            embedded_user_prompt = np.frombuffer(binary, dtype=np.float32)
+            embedded_user_prompt = np.frombuffer(binary[0], dtype=np.float32)
             embeddings_list.append(embedded_user_prompt)
             # np.frombuffer(blob, dtype=np.float32)
             # This funktion is the converter from BLOB to numpy. !IMPORTANT
@@ -174,18 +166,18 @@ class LMIA_context_mini:
         This way, we get the corresponding rows from inside SQLite. 
         This is half the job of creating the output done. 
         """
-        global row_numbers
         row_numbers = []
         for i in most_similar_user_prompts:
             row_numbers.append(similarity_list.index(i) + 1)        # +1 , because SQLite is 1 based, and lists are 0 based. 
         """
         Now that we have the index nummer, we can grab the row from the SQLite DB, and prossed with the the output creaation. 
         """
+        final_2_most_similar_user_prompts = []
         for row in row_numbers:
-            self.curr.execute("""
-            SELECT 
-            """)
+            final_2_most_similar_user_prompts.append(self.curr.execute(f"""
+            SELECT user_prompt FROM memory WHERE UUID = {row}
+            """).fetchone())
 
-        return f"{}"
+        #return f"{}"    # NOT YET DONE but this is how it will look like in the end. 
 
 
