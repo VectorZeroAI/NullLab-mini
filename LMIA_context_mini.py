@@ -168,16 +168,57 @@ class LMIA_context_mini:
         """
         row_numbers = []
         for i in most_similar_user_prompts:
+            # It doesnt matter if a different row that is equaly similar is selected, since we need similar rows, and not SPECIFIC similar rows, so ... doesnt matter =)
             row_numbers.append(similarity_list.index(i) + 1)        # +1 , because SQLite is 1 based, and lists are 0 based. 
         """
         Now that we have the index nummer, we can grab the row from the SQLite DB, and prossed with the the output creaation. 
         """
         final_2_most_similar_user_prompts = []
         for row in row_numbers:
-            final_2_most_similar_user_prompts.append(self.curr.execute(f"""
+            get_stuff = self.curr.execute(f"""
             SELECT user_prompt FROM memory WHERE UUID = {row}
-            """).fetchone())
+            """).fetchone() # This is a tuple of 1 element
+            final_2_most_similar_user_prompts.append(get_stuff[0]) # this is the element itself. 
+        """
+        Now, we have gotten 2 most similar user prompts, with their row numbers. 
+        Now we can proseed to getting the ai_responses for the similar user prompts. 
+        """
+        corresponding_ai_responses = []
+        for row in row_numbers:
+            fetch_variable = self.curr.execute(f"""
+        SELECT ai_response FROM memory WHERE UUID = {row}
+            """).fetchall()
+            corresponding_ai_responses.append(fetch_variable[0][0])
+        # Now we have the corresponding ai responses. 
+        # Now we can grab similar responses to them, and be happpy.
+        """
+        Now we make the loop that would output the similar AI responses from the past. 
+        Output format: variable "similar_ai_responses"
+        """
+        embedded_ai_responses = []
+        for row in row_numbers:
+            fetch_variable = self.curr.execute(f"""
+            SELECT embedded_ai_response FROM memory WHERE UUID = {row}
+            """).fetchall()
+            embedded_ai_responses.append(fetch_variable[0][0])
 
-        #return f"{}"    # NOT YET DONE but this is how it will look like in the end. 
+        similarity_list = []
+        for i, emb in enumerate(embedded_ai_responses):
+            fetch_variable = self.curr.execute(f"""
+            SELECT embedded_ai_response FROM memory
+            """).fetchall()
+            embeddings_list = fetch_variable
+            similarity_list.append([])
+            for embedding in embeddings_list:
+                similarity = util.similarity.cos_sim(emb, embedding[0][0])
+                similarity_list[i].append(similarity)
+
+
+
+ 
+
+
+
+        return f"{final_2_most_similar_user_prompts}, {corresponding_ai_responses}, "    # NOT YET DONE but this is how it will look like in the end. 
 
 
