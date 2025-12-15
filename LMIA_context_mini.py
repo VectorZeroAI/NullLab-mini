@@ -186,7 +186,7 @@ class LMIA_context_mini:
         corresponding_ai_responses = []
         for row in row_numbers:
             fetch_variable = self.curr.execute(f"""
-        SELECT ai_response FROM memory WHERE UUID = {row}
+            SELECT ai_response FROM memory WHERE UUID = {row}
             """).fetchall()
             corresponding_ai_responses.append(fetch_variable[0][0])
         # Now we have the corresponding ai responses. 
@@ -201,17 +201,38 @@ class LMIA_context_mini:
             SELECT embedded_ai_response FROM memory WHERE UUID = {row}
             """).fetchall()
             embedded_ai_responses.append(fetch_variable[0][0])
+            # This puts the corresponding ai responses to the 2 most similar user prompts into the list 
+            # named embedded_ai_responses
 
-        similarity_list = []
-        for i, emb in enumerate(embedded_ai_responses):
-            fetch_variable = self.curr.execute(f"""
-            SELECT embedded_ai_response FROM memory
-            """).fetchall()
+        fetch_variable = self.curr.execute(f"""
+        SELECT embedded_ai_response FROM memory WHERE UUID != {row_numbers[0]} AND UUID != {row_numbers[1]}
+        """).fetchall() 
+        # This here gets all the embedded ai responses, excluding the AI responses that they are gonna be compared to. 
+
+        similarity_list = [] # This list is the list of lists that I am gonna be using to store the comarason results
+        for emb in embedded_ai_responses:    # for each of the corresponsding ai_responses to the 2 most similar user promots:
             embeddings_list = fetch_variable
-            similarity_list.append([])
-            for embedding in embeddings_list:
-                similarity = util.similarity.cos_sim(emb, embedding[0][0])
-                similarity_list[i].append(similarity)
+            inter_list = []           
+# TODO: add conevrsion from BLOB to an array.
+# TODO: add conevrsion from BLOB to an array.
+# TODO: add conevrsion from BLOB to an array.
+# TODO: add conevrsion from BLOB to an array.
+# TODO: add conevrsion from BLOB to an array.
+# TODO: add conevrsion from BLOB to an array.
+# TODO: add conevrsion from BLOB to an array.
+# TODO: add conevrsion from BLOB to an array.
+# TODO: add conevrsion from BLOB to an array.
+# TODO: add conevrsion from BLOB to an array.
+# TODO: add conevrsion from BLOB to an array.
+            for embedding in embeddings_list:       # For each of the ai_responses, excluding the ... the ones in the comment just on top of this one. 
+                similarity = util.similarity.cos_sim(emb, embedding[0][0])   # Compute similarity
+                inter_list.append(similarity)   # Append similarity to the internal list
+
+            similarity_list.append(inter_list)  # And once its done, append the internal list to the similarity list. 
+            """
+            This makes a double for loop, wich returns a list of lists called similarity_list, wich we can later on loop through to compare the embeddings 
+            """
+
 
 
 
