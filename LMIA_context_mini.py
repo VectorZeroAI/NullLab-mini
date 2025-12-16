@@ -98,10 +98,11 @@ class LMIA_context_mini:
 
         if origin == 1: 
             self.curr.execute("INSERT INTO memory (user_prompt) VALUES (?)", (prompt,))
-            self.embedded_prompt = self.embedder.encode(prompt)  
+            self.embedded_prompt = self.embedder.encode(prompt, normalize_embeddings=True)  
             self.embedded_prompt = self.embedded_prompt.astype(np.float32).tobytes()
             # The shenanigan above transforms the embedding to bytes, so they can be stored as BLOB in SQLite DB. 
             
+            self.conn.commit()
             self.curr.execute(""" 
                 UPDATE memory
                 SET embedded_user_prompt = ?
@@ -115,8 +116,9 @@ class LMIA_context_mini:
                 SET ai_response = ?
                 WHERE UUID = (SELECT UUID FROM memory WHERE ai_response IS NULL ORDER BY UUID DESC LIMIT 1)
                 """, (prompt,))
- 
-            self.embedded_prompt = self.embedder.encode(prompt)  
+            
+            self.conn.commit()
+            self.embedded_prompt = self.embedder.encode(prompt, normalize_embeddings=True)  
             self.embedded_prompt = self.embedded_prompt.astype(np.float32).tobytes()
             # The shenanigan above transforms the embedding to bytes, so they can be stored as BLOB in SQLite DB. 
             
@@ -135,7 +137,7 @@ class LMIA_context_mini:
         print("sucsessfully inputed the data.")
 
     def get_context(self, prompt):
-        embedded_prompt_to_compare_to = self.embedder.encode(prompt)
+        embedded_prompt_to_compare_to = self.embedder.encode(prompt, normalize_embeddings=True)
         binary_list_of_user_prompt_embeddings = self.curr.execute("""
             SELECT embedded_user_prompt FROM memory;
         """).fetchall()
@@ -152,7 +154,7 @@ class LMIA_context_mini:
         # This piece of code creates the list of embeddings, not binaries. The order is the same. The order is important.
 
         for emb in embeddings_list:
-            sim = util.cos_sim(embedded_prompt_to_compare_to, emb).item()
+            sim = np.dot(embedded_prompt_to_compare_to, emb)
             similarity_list.append(sim)
 
         # This piece of code just calculates the similarity of each element, and appends it to a list. 
@@ -200,7 +202,8 @@ class LMIA_context_mini:
             fetch_variable = self.curr.execute(f"""
             SELECT embedded_ai_response FROM memory WHERE UUID = {row}
             """).fetchall()
-            embedded_ai_responses.append(fetch_variable[0][0])
+            intermediate = np.frombuffer(fetch_variable[0][0], dtype=np.float32) # Coversion from BLOB to numpy array.
+            embedded_ai_responses.append(intermediate)
             # This puts the corresponding ai responses to the 2 most similar user prompts into the list 
             # named embedded_ai_responses
 
@@ -211,21 +214,14 @@ class LMIA_context_mini:
 
         similarity_list = [] # This list is the list of lists that I am gonna be using to store the comarason results
         for emb in embedded_ai_responses:    # for each of the corresponsding ai_responses to the 2 most similar user promots:
-            embeddings_list = fetch_variable
-            inter_list = []           
-# TODO: add conevrsion from BLOB to an array.
-# TODO: add conevrsion from BLOB to an array.
-# TODO: add conevrsion from BLOB to an array.
-# TODO: add conevrsion from BLOB to an array.
-# TODO: add conevrsion from BLOB to an array.
-# TODO: add conevrsion from BLOB to an array.
-# TODO: add conevrsion from BLOB to an array.
-# TODO: add conevrsion from BLOB to an array.
-# TODO: add conevrsion from BLOB to an array.
-# TODO: add conevrsion from BLOB to an array.
-# TODO: add conevrsion from BLOB to an array.
+            embeddings_list = []
+            for binary in fetch_variable:
+                intermediate = np.frombuffer(binary[0], dtype=np.float32)    # Conversion
+                embeddings_list.append(intermediate)                            # Conversion from BLOB to np.array
+            
+            inter_list = []      
             for embedding in embeddings_list:       # For each of the ai_responses, excluding the ... the ones in the comment just on top of this one. 
-                similarity = util.similarity.cos_sim(emb, embedding[0][0])   # Compute similarity
+                similarity = np.dot(emb, embedding[0])   # Compute similarity
                 inter_list.append(similarity)   # Append similarity to the internal list
 
             similarity_list.append(inter_list)  # And once its done, append the internal list to the similarity list. 
