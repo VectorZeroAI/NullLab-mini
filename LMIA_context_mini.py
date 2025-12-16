@@ -185,6 +185,10 @@ class LMIA_context_mini:
         Now, we have gotten 2 most similar user prompts, with their row numbers. 
         Now we can proseed to getting the ai_responses for the similar user prompts. 
         """
+        print("first branch is over. Beginning second branch")
+        """
+        This is the beggining of the second branch. 
+        """
         corresponding_ai_responses = []
         for row in row_numbers:
             fetch_variable = self.curr.execute(f"""
@@ -213,14 +217,19 @@ class LMIA_context_mini:
         # This here gets all the embedded ai responses, excluding the AI responses that they are gonna be compared to. 
 
         similarity_list = [] # This list is the list of lists that I am gonna be using to store the comarason results
+
         for emb in embedded_ai_responses:    # for each of the corresponsding ai_responses to the 2 most similar user promots:
+
             embeddings_list = []
+
             for binary in fetch_variable:
                 intermediate = np.frombuffer(binary[0], dtype=np.float32)    # Conversion
                 embeddings_list.append(intermediate)                            # Conversion from BLOB to np.array
             
             inter_list = []      
+
             for embedding in embeddings_list:       # For each of the ai_responses, excluding the ... the ones in the comment just on top of this one. 
+
                 similarity = np.dot(emb, embedding[0])   # Compute similarity
                 inter_list.append(similarity)   # Append similarity to the internal list
 
@@ -228,14 +237,42 @@ class LMIA_context_mini:
             """
             This makes a double for loop, wich returns a list of lists called similarity_list, wich we can later on loop through to compare the embeddings 
             """
+        """
+        This is the second branch of search, wich pulls in 5 most ai_respons'es to the previous user prompts similar to the quesrry prompt
+        wich puts this part as the second branch. 
+        """
+        indexes_of_similar_ai_responses = [] # This is a list of lists, of the indexes of the similar user embeddings. 
+        for sim_list in similarity_list:
+            top_sim_items_5 = heapq.nlargest(5, sim_list)
+            intermediate = []
+            for i in top_sim_items_5:
+                index = top_sim_items_5.index(i)
+                intermediate.append(index)
+            indexes_of_similar_ai_responses.append(intermediate)
+        # SO I assume the variable indexes_of_similar_ai_responses is the list of index number lists. 
+        # so, we just have to fetch them one by one from the SQLite DB ? 
+        # IDK, I am just fucking confused by this shit. 
+        # I guess, but I am not sure. 
+        # Whatever, lets just do that and be done. 
 
+        similar_ai_responses = []
 
-
-
- 
-
-
-
-        return f"{final_2_most_similar_user_prompts}, {corresponding_ai_responses}, "    # NOT YET DONE but this is how it will look like in the end. 
+        for index_list in indexes_of_similar_ai_responses:
+            for index in index_list:
+                element = self.curr.execute(f"""
+            SELECT ai_response FROM memory WHERE UUID = {index}
+                """)
+                similar_ai_responses.append(element)
+        """
+        Branch 2 over.
+        """
+        print("branch 2 over.")
+        """
+        Out of branch 1: last 5 messegnes by TIMESTAMP
+        """
+        last_5_messenges = self.curr.execute("""
+            SELECT user_prompt, ai_response FROM memory ORDER BY timestamp DESC LIMIT 5;
+                                             """).fetchall()
+        return f"{final_2_most_similar_user_prompts}, {corresponding_ai_responses}, {similar_ai_responses} {last_5_messenges}"    # NOT YET DONE but this is how it will look like in the end. 
 
 
