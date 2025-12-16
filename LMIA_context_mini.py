@@ -230,7 +230,7 @@ class LMIA_context_mini:
 
             for embedding in embeddings_list:       # For each of the ai_responses, excluding the ... the ones in the comment just on top of this one. 
 
-                similarity = np.dot(emb, embedding[0])   # Compute similarity
+                similarity = np.dot(emb, embedding)   # Compute similarity
                 inter_list.append(similarity)   # Append similarity to the internal list
 
             similarity_list.append(inter_list)  # And once its done, append the internal list to the similarity list. 
