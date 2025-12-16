@@ -246,14 +246,14 @@ class LMIA_context_mini:
             top_sim_items_5 = heapq.nlargest(5, sim_list)
             intermediate = []
             for i in top_sim_items_5:
-                index = top_sim_items_5.index(i)
+                index = top_sim_items_5.index(i)    # AI-diagnos.nvim showed that this line here has the logic error
+                # TODO: FIX
+                # PROBLEM: top_sim_items_5 doesnt correspond to the initial order. 
+                # I did something wrong there. 
+                # I guess I still have to make one more step insdead of just getting index directly. 
                 intermediate.append(index)
             indexes_of_similar_ai_responses.append(intermediate)
-        # SO I assume the variable indexes_of_similar_ai_responses is the list of index number lists. 
-        # so, we just have to fetch them one by one from the SQLite DB ? 
-        # IDK, I am just fucking confused by this shit. 
-        # I guess, but I am not sure. 
-        # Whatever, lets just do that and be done. 
+            # TODO: FIX
 
         similar_ai_responses = []
 
