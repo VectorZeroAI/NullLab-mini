@@ -48,6 +48,25 @@ projekt_parts = ["plan.json", "blueprint.json", "metadata.json", "config.py", "b
 
 
 # ----------------------------------------------------------------------------------------------------
+"""
+Early init state
+Dependancy loading
+"""
+
+
+print("initialising NullLab-mini")
+print("import sequense beginns now.")
+
+from pathlib import Path
+import subprocess
+
+
+"""
+The import should be in try expect with proper handling of missing imports, but it didnt work for some reason, so I just cut it out. 
+"""
+
+print("early initialisation complete.")
+
 
 """
 
@@ -60,27 +79,6 @@ TODO: FUTURE: add a configuration option that loads you into a projekt instantly
 
 def state0():   
     while True:
-        
-        global exep
-
-        print("initialising NullLab-mini")
-        print("import sequense beginns now.")
-        
-        # Gracefull handling of missing dependancies. 
-
-        try:
-            from pathlib import Path
-            
-            # All the imports go here. This block handles missing dependancies gracefully, and tells the user about them. 
-
-        except ImportError as exep:
-            raise RuntimeError(f"missing dependancy {exep}. Install it to use the programm.") from exep
-
-        """
-        The import should be in try expect with proper handling of missing imports, but it didnt work for some reason, so I just cut it out. 
-        """
-
-        print("early initialisation complete.")
         
         #!!! Now comes the projekt init
         
@@ -187,11 +185,29 @@ Done for today!!!
 
 def state1():
     while True:
-        pass
-        # My current plan : 
-        # TODO: implement LMIA_context_mini
-        # TODO: learn to script tmux
-        # TODO: Implement the final thingy. 
+        print("initialising tmux session")
+        tmux_session_name = "NullLab_mini session"
+        print(f"tmux session name : {tmux_session_name}")
+        subprocess.run(f"tmux new-session -d -s {tmux_session_name} -n main")
+        subprocess.run(f"tmux split-window -v -t {tmux_session_name}:main")
+        subprocess.run(f"tmux split-window -h -t {tmux_session_name}:main.1")
+        # TODO: FINISH 
+        # TODO: Understand how to spawn stuff into those places. 
+        # Propably via running python apps into there, that interact with the user, 
+        # But if I do that, I must design a communication method. 
+        # ... Lets do the same thing as Unix Sockets do, but
+        # via a file. 
+        # Lets say the file is called "SOCKET.json"
+        # And the "client" python files, that run inside the tmux session,
+        # Can write the events to the SOCKET.json file. 
+        # Or I could make it so these create the files with special names, that are to be treated as signals. 
+        # Whatever. 
+        # So, I will need to import watchdog, and create an event handling pipeline here ... not as hard as I thought. 
+        # TODO: IMPLEMENT
+        # TODO: IMPORT WATCHDOG
+        # TODO: DONT FORGET COLORS
+
+        
 
 
 
