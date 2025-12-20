@@ -11,7 +11,7 @@ PLAN:
 
 # Imports
 from pathlib import Path
-from sentence_transformers import SentenceTransformer, util
+from sentence_transformers import SentenceTransformer
 import sqlite3
 import numpy as np
 import heapq
@@ -246,14 +246,9 @@ class LMIA_context_mini:
             top_sim_items_5 = heapq.nlargest(5, sim_list)
             intermediate = []
             for i in top_sim_items_5:
-                index = top_sim_items_5.index(i)    # AI-diagnos.nvim showed that this line here has the logic error
-                # TODO: FIX
-                # PROBLEM: top_sim_items_5 doesnt correspond to the initial order. 
-                # I did something wrong there. 
-                # I guess I still have to make one more step insdead of just getting index directly. 
-                intermediate.append(index)
+                index = sim_list.index(i)  
+                intermediate.append(index + 1)   # Now this is correct. 
             indexes_of_similar_ai_responses.append(intermediate)
-            # TODO: FIX
 
         similar_ai_responses = []
 
@@ -261,8 +256,8 @@ class LMIA_context_mini:
             for index in index_list:
                 element = self.curr.execute(f"""
             SELECT ai_response FROM memory WHERE UUID = {index}
-                """)
-                similar_ai_responses.append(element)
+                """).fetchall()
+                similar_ai_responses.append(element[0][0])
         """
         Branch 2 over.
         """
@@ -273,6 +268,6 @@ class LMIA_context_mini:
         last_5_messenges = self.curr.execute("""
             SELECT user_prompt, ai_response FROM memory ORDER BY timestamp DESC LIMIT 5;
                                              """).fetchall()
-        return f"{final_2_most_similar_user_prompts}, {corresponding_ai_responses}, {similar_ai_responses} {last_5_messenges}"    # NOT YET DONE but this is how it will look like in the end. 
+        return f"{final_2_most_similar_user_prompts}, {corresponding_ai_responses}, {similar_ai_responses}, {last_5_messenges}"
 
 
