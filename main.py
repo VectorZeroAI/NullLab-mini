@@ -103,7 +103,7 @@ def state0():
                                                
 
             print(f"NullLab-mini will now assume full controll over dir {input_dir}.")
-            if input("Confirmation. Yes or No") == "Yes" or "Y":
+            if input("Confirmation. Yes or No") in ("Yes", "Y", "yes", "y"):
                 break
             else:
                 print("No confirmation recived. Aborting one step back.")
@@ -189,16 +189,15 @@ def state1():
         tmux_session_name = "NullLab_mini session"
         print(f"tmux session name : {tmux_session_name}")
         subprocess.run([
-
+            "tmux", "new-session", "-d", "-s", f"{tmux_session_name}", "-n", "main"
             ])
 
         subprocess.run([
-            "tmux", "split-window", "-v", "-t", "-n", f"{tmux_session_name}:main"
+            "tmux", "split-window", "-v", "-t", f"{tmux_session_name}:main"
             ])
         subprocess.run([
-            "tmux", "split-window", "-h", "", "", "", ""
+            "tmux", "split-window", "-h", "-t", f"{tmux_session_name}:main.1"
             ])
-            # f"tmux split-window -h -t {tmux_session_name}:main.1",
             # f"tmux new-session -d -s {tmux_session_name} -n main",
         subprocess.run([
             "tmux", "send-keys",
@@ -206,9 +205,18 @@ def state1():
             "python3 ai_chat.py",
             "C-m"
         ])      # This here runs the ai_chat.py app into the session on the side.
-                # TODO: Implement The second half the tmux session. 
         # subprocess.run(["tmux", "<tmux-command>", "-t", "<target>", "<shell command>"])    
         # This is the template for tmux command launching. 
+        global state
+        while state == 1:
+            pass
+            # TODO: FINISH THIS BLOCK. 
+            # this block must check for changes in files blueprint.json and plan.json, 
+            # via watchdog
+            # and update the view in the second half of the screen. 
+            # ...
+
+
 
 # TODO: DONT FORGET COLORS
 
