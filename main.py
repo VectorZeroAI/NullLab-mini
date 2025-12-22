@@ -195,10 +195,8 @@ def state1():
         subprocess.run([
             "tmux", "split-window", "-v", "-t", f"{tmux_session_name}:main"
             ])
-        subprocess.run([
-            "tmux", "split-window", "-h", "-t", f"{tmux_session_name}:main.1"
-            ])
-            # f"tmux new-session -d -s {tmux_session_name} -n main",
+        # NOTE: We will only be showing one of the files at a time. So, no need for the second split
+        # NOTE: Since only one of those is modified at a time. 
         subprocess.run([
             "tmux", "send-keys",
             "-t", f"{tmux_session_name}:main.0",
@@ -215,6 +213,10 @@ def state1():
             # via watchdog
             # and update the view in the second half of the screen. 
             # ...
+            # As well as monitor for changes in "signal.json" file. 
+            # Once changes detected, look into the value in there. 
+            # And the value in there is the signal. 
+            # This will be used by the ai_chat.py to signal that the view must be changed. 
 
 
 
