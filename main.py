@@ -189,10 +189,17 @@ def state1():
         tmux_session_name = "NullLab_mini session"
         print(f"tmux session name : {tmux_session_name}")
         subprocess.run([
-            f"tmux new-session -d -s {tmux_session_name} -n main",
-            f"tmux split-window -v -t {tmux_session_name}:main",
-            f"tmux split-window -h -t {tmux_session_name}:main.1",
-            ])  # This here creates the session ? 
+
+            ])
+
+        subprocess.run([
+            "tmux", "split-window", "-v", "-t", "-n", f"{tmux_session_name}:main"
+            ])
+        subprocess.run([
+            "tmux", "split-window", "-h", "", "", "", ""
+            ])
+            # f"tmux split-window -h -t {tmux_session_name}:main.1",
+            # f"tmux new-session -d -s {tmux_session_name} -n main",
         subprocess.run([
             "tmux", "send-keys",
             "-t", f"{tmux_session_name}:main.0",
