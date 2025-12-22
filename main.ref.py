@@ -130,12 +130,12 @@ def state0():
             # if True, break, if false, pass.
             if flag_file_not_found != None:
                 print(f"Projekt not found on {dir}")
-                if input("initialise an empty projekt?") in ("Y", "Yes", "y", "yes"):
+                if input("initialise an empty projekt?") == "Yes" or "Y":              # Init of an empty projekt.                                                      # The list of required files.
                     
                     for file in projekt_parts:
                         file_path = base_dir / file
                         if not file_path.exists():
-                            file_path.touch()
+                            file_path.touch
                             print(f"created file {file}")
                         else:
                             print(f"file {file} already existed. Ignoring.")   # I think this is pretty good design. 
@@ -200,8 +200,6 @@ def state1():
             "C-m"
         ])      # This here runs the ai_chat.py app into the session on the side.
                 # TODO: Implement The second half the tmux session. 
-        # subprocess.run(["tmux", "<tmux-command>", "-t", "<target>", "<shell command>"])    
-        # This is the template for tmux command launching. 
 
 # TODO: DONT FORGET COLORS
 
