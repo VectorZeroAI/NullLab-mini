@@ -59,13 +59,13 @@ print("import sequense beginns now.")
 
 from pathlib import Path
 import subprocess
-
+from rich import print
 
 """
 The import should be in try expect with proper handling of missing imports, but it didnt work for some reason, so I just cut it out. 
 """
 
-print("early initialisation complete.")
+print("[green]early initialisation complete.[/green]")
 
 
 """
@@ -95,18 +95,19 @@ def state0():
             base_dir = Path(input_dir)
             
             if base_dir.exists():
-                print("directory found. Continuing")
+                print("[green]directory found. Continuing[/green]")
                 pass
             else:
-                print("dir not found, plese retry.")
+                print("[red]dir not found, plese retry.[/red]")
                 continue
                                                
 
             print(f"NullLab-mini will now assume full controll over dir {input_dir}.")
-            if input("Confirmation. Yes or No") in ("Yes", "Y", "yes", "y"):
+            if input("Confirmation. Yes or No").lower() in ("yes", "y"):
+                print("[green]confirmation recieved. Proceesing[/green]")
                 break
             else:
-                print("No confirmation recived. Aborting one step back.")
+                print("[red]No confirmation recived. Aborting one step back.[/red]")
                 continue
 
         while True:
@@ -120,7 +121,7 @@ def state0():
                 if file_path.exists() and file_path.is_file():
                     pass
                 else:
-                    print(f"file {name} not found.")            # Just a simple check. 
+                    print(f"[red]file {name} not found.[/red]")            # Just a simple check. 
                     if flag_file_not_found == None: 
                         flag_file_not_found = 0
                     else:
@@ -129,14 +130,14 @@ def state0():
             
             # if True, break, if false, pass.
             if flag_file_not_found != None:
-                print(f"Projekt not found on {dir}")
-                if input("initialise an empty projekt?") in ("Y", "Yes", "y", "yes"):
+                print(f"[red]Projekt not found on {dir}[/red]")
+                if input("initialise an empty projekt?").lower in ("y", "yes"):
                     
                     for file in projekt_parts:
                         file_path = base_dir / file
                         if not file_path.exists():
                             file_path.touch()
-                            print(f"created file {file}")
+                            print(f"[green]created file {file}[/green]")
                         else:
                             print(f"file {file} already existed. Ignoring.")   # I think this is pretty good design. 
                     
@@ -155,6 +156,7 @@ def state0():
     global state 
     state = 1    # This one switches the state. 
     
+    print("[green]init state over. Return status = good[/green]")
     return True       # True means sucsess, False or crash means fatal error, None means unknown error scale. 
     
 """
@@ -186,7 +188,7 @@ Done for today!!!
 def state1():
     while True:
         print("initialising tmux session")
-        tmux_session_name = "NullLab_mini session"
+        tmux_session_name = "NullLab_mini_session"
         print(f"tmux session name : {tmux_session_name}")
         subprocess.run([
             "tmux", "new-session", "-d", "-s", f"{tmux_session_name}", "-n", "main"
