@@ -137,6 +137,20 @@ class LMIA_context_mini:
         print("sucsessfully inputed the data.")
 
     def get_context(self, prompt):
+        # First, check if there are enough messenges to work with. Min = 5
+        fetch_variable = self.curr.execute("""
+            SELECT UUID FROM memory ORDER BY UUID DESC LIMIT 1
+        """).fetchone() # FIXME @ SQL
+        if fetch_variable < 5:
+            fetch_variable = self.curr.execute("""
+                SELECT user_prompt, ai_response FROM memory
+            """).fetchall()
+            everything = fetch_variable
+
+            return f"{everything}"
+        else:
+            pass # Continue on with the normal work
+
         embedded_prompt_to_compare_to = self.embedder.encode(prompt, normalize_embeddings=True)
         binary_list_of_user_prompt_embeddings = self.curr.execute("""
             SELECT embedded_user_prompt FROM memory;

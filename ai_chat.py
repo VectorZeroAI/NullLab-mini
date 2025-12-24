@@ -23,6 +23,7 @@ print("[green]Initialising ai_chat [/green]")
 import requests
 from rich import print
 import sys
+import LMIA_context_mini
 
 print("[bold][italic][red]Hello, human. Welcome to NullLab-mini chat[/bold][/italic][/red]")
 
@@ -44,19 +45,22 @@ messenges = [
 stage = 1
 # TODO: Add a loading of stage from a save file, if such exists. 
 while stage in (1, 2, 3, 4):
+    # This is the user input handling
     user_input = input("You: ").strip()
     if user_input.lower() in ("exit", "quit"):
         prev_stage = stage
         break
+    mem = LMIA_context_mini.LMIA_context_mini(DB_path="./DB.db") # Memory initialisation
+    mem.input_context(user_input, 1) # NOTE: 1 == ai , 0 == user
+
+    # This is the response handling
     if stage == 1:
         system_prompt = """
         PLACEHOLDER PROMPT
         """ # TODO: FIXME
-        messenges.append({"role": "user", "content": user_input})
-
         payload = {
                 "model": model,
-                "messages": messenges,
+                "messages": "".join(user_input, mem.get_context(prompt=user_input)),
             }
         resp = requests.post(api_url, headers=headers, json=payload)
         resp.raise_for_status()
