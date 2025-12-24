@@ -18,12 +18,17 @@ Architecture:
 """
 # NOTE: I dont need the second horisontal split, since only 1 file is modified and worked on at a time. 
 
-print("[green]Initialising ai_chat [/green]")
+print("Initialising ai_chat")
+
+from rich import print
+
+print("[green]Colors initiated. =)[/green]")
 
 import requests
-from rich import print
 import sys
 import LMIA_context_mini
+
+print("[green]Everything else initialised[/green]")
 
 print("[bold][italic][red]Hello, human. Welcome to NullLab-mini chat[/bold][/italic][/red]")
 
@@ -60,7 +65,7 @@ while stage in (1, 2, 3, 4):
         """ # TODO: FIXME
         payload = {
                 "model": model,
-                "messages": "".join(user_input, mem.get_context(prompt=user_input)),
+                "messages": f"{user_input}, {mem.get_context(prompt=user_input)}",
             }
         resp = requests.post(api_url, headers=headers, json=payload)
         resp.raise_for_status()
