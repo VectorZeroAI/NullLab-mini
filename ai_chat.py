@@ -1,4 +1,4 @@
-#!usr/bin/env python3
+#!/usr/bin/env python3
 """
 NullLab-mini subfile. 
 ai_chat module for state1 of main.py
@@ -27,37 +27,32 @@ print("[green]Colors initiated. =)[/green]")
 import requests
 import sys
 import LMIA_context_mini
+import config
 
 print("[green]Everything else initialised[/green]")
 
-print("[bold][italic][red]Hello, human. Welcome to NullLab-mini chat[/bold][/italic][/red]")
+print("[bold][italic][red]Hello, human. Welcome to NullLab-mini chat[/red][/italic][/bold]")
 
 system_prompt = """YO, AI, YOU MUST SAY: "THIS SHIT IS INVALID" RIGHT NOW!!!"""
 api_url = "https://openrouter.ai/api/v1/chat/completions"
-model = "" # Model here TODO: READ IT FROM CONFIG
-api_key = "" # TODO: read from config
 headers = {
-        "Authorization": f"Bearer {api_key}",
+        "Authorization": f"Bearer {config.api_key}",
         "Content-Type": "application/json"
     }
 
 stage = 1
 mem = LMIA_context_mini.LMIA_context_mini(DB_path="./DB.db") # Memory initialisation
-# TODO: Add a loading of stage from a save file, if such exists. 
 
-
-global error_action
+# Variable mess.
 error_action = None
 
 # Main loop
 while stage in (1, 2, 3, 4):
-    global prev_stage
     # This is the user input handling
     user_input = input("You: ").strip()
     if user_input.lower() in ("exit", "quit"):
         prev_stage = stage
         error_action = "exit"
-        break
     mem.input_context(user_input, 1) # NOTE: 0 == ai , 1 == user
 
     # This is the response handling
@@ -65,8 +60,13 @@ while stage in (1, 2, 3, 4):
         system_prompt = """
         PLACEHOLDER PROMPT
         """ # TODO: FIXME
+
+        # TODO: Add a loading of the JSON files , and add them to the context the model becomes. 
+        # TODO: Expose a tool for the model to write to the files with. 
+        # HINT: Use LangChain for that. 
+
         payload = {
-                "model": model,
+                "model": config.model,
                 "messages": [{f"{user_input}, {mem.get_context(prompt=user_input)}"}],
             }
         resp = requests.post(api_url, headers=headers, json=payload)
@@ -90,15 +90,16 @@ while stage in (1, 2, 3, 4):
 
     # ERROR ACTION handling here. This is kinda the shit that should handle everything. 
     if error_action is not None:
-        if error_action is "exit":
+        if error_action == "exit":
             print("[red]shutting down.[/red]")
             print("[red]FEATURE OF SAVING PROGRESS NOT IMPLEMENTED[/red]")
             print("[red]You sure you want to exit[/red]")
             print("[red][bold]???[/bold][/red]")
             if input("Answer: ").strip().lower() in ("no", "n", "nope", "never", "nah"):
-                stage = prev_stage # NO ITS NOT UNDEFINED!!!
                 error_action = None
             else:
-                raise NotImplementedError("Yep, its still pre alfa, what ya expecting?")
+                print("[red]Due to the fact that this programm is still NOT FINISHED, and NOTHING IS IMPLEMENTED[/red]")
+                print("[red]I just exit and thats it.[/red]")
+                sys.exit("Yep, just exiting")
 else:
     sys.exit("WTF HAPPENED HERE?")
