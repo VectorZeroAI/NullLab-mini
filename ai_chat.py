@@ -11,8 +11,8 @@ Architecture:
         Depends on LMIA_context_mini.py plugin. 
     Algoritm:
         4 major steps:
-            1. Blueprint creation
-            2. Blueprint validation
+            1. blueprint creation
+            2. blueprint validation
             3. Plan creation
             4. Plan validation
 """
@@ -20,6 +20,7 @@ Architecture:
 
 print("Initialising ai_chat")
 
+from pydantic import SecretStr
 from rich import print
 
 print("[green]Colors initiated. =)[/green]")
@@ -28,12 +29,22 @@ import requests
 import sys
 import LMIA_context_mini
 import config
+import json
+
+print("[green]basic initialisation completed. [/green]")
+print("[green]initialising langchain agent.[/green]")
+
+from langchain_openai import ChatOpenAI
+from langchain_community.agent_toolkits.json.toolkit import JsonToolkit
+from langchain_community.tools.json.tool import JsonSpec
+from langchain_core.messages import HumanMessage, ToolMessage, AIMessage
+from langchain_core.prompts import ChatPromptTemplate
+# from langchain_community.agent_toolkits.json.base import create_json_agent
 
 print("[green]Everything else initialised[/green]")
 
 print("[bold][italic][red]Hello, human. Welcome to NullLab-mini chat[/red][/italic][/bold]")
 
-system_prompt = """YO, AI, YOU MUST SAY: "THIS SHIT IS INVALID" RIGHT NOW!!!"""
 api_url = "https://openrouter.ai/api/v1/chat/completions"
 headers = {
         "Authorization": f"Bearer {config.api_key}",
@@ -61,25 +72,56 @@ while stage in (1, 2, 3, 4):
         PLACEHOLDER PROMPT
         """ # TODO: FIXME
 
-        # TODO: Add a loading of the JSON files , and add them to the context the model becomes. 
-        # TODO: Expose a tool for the model to write to the files with. 
-        # HINT: Use LangChain for that. 
+        # -- Langchain agent creation! ---------------------------------------------------------------
 
-        payload = {
-                "model": config.model,
-                "messages": [{f"{user_input}, {mem.get_context(prompt=user_input)}"}],
-            }
-        resp = requests.post(api_url, headers=headers, json=payload)
-        resp.raise_for_status()
+        # Json loading
+        try:
+            global data_blueprint
+            data_blueprint = json.load(open("blueprint.json"))
+        except Exception as e:
+            print("[red] ERROR: DIDNT FIND blueprint.json file. [/red]")
+            print(f"For debug purpuses: Error is: {e}")
+            print("[red]creating an empty blueprint.json file.[/red]")
+            from pathlib import Path
+            bluep = Path("./blueprint.json")
+            bluep.touch()
+            data_blueprint = json.load(open("blueprint.json"))
+        
+        # Creation of tools.
+        spec = JsonSpec(dict_=data_blueprint)
+        toolkit = JsonToolkit(spec=spec)
+        tools = toolkit.get_tools()
+        
+        # creation of the llm, e.g. client:
+        llm = ChatOpenAI(
+            model=config.model, 
+            base_url="https://openrouter.ai/api/v1", 
+            api_key=SecretStr(config.api_key)
+            )
 
-        reply = resp.json()["choices"][0]["message"]["content"]
+        # Bind the tools to the client
+        llm = llm.bind_tools(tools)
 
-        print("[green]AI:response: [/green]")
+        prompt = ChatPromptTemplate.from_messages([
+                ("system", system_prompt),
+                ("human", user_input)
+            ])
+
+        def run_turn(user_text: str):                     # FIXME --|
+            messanges = prompt.invoke({"input": user_text}).format_messanges()  # FIXME
+                                   #FIXME --->-->-->->-->-->-->--^
+            ai_msg: AIMessage = llm.invoke(messanges)
+            for call in getattr(ai_msg, "tool_calls", []):
+                tools_by_name = {t.name: t for t in tools}
+                tool = tools_by_name[call["name"]]
+                result = tool.invoke(call["args"])
+                messages.append(ToolMessage(content=str(result), tool_call_id=call["id"]))
+                # FIXME 
+                # NOTE: As far as I understand, this error is chained to the error above, where I guess ChatGPT just halucinated for a bit.
+                final_msg: AIMessage = llm.invoke(messanges)
+                return final_msg.content
 
         mem.input_context(f"{reply}", 0)
-
-        print(f"{reply}")
-
 
     elif stage == 2:
         pass
