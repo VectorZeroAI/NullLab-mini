@@ -141,7 +141,7 @@ class LMIA_context_mini:
         fetch_variable = self.curr.execute("""
             SELECT UUID FROM memory ORDER BY UUID DESC LIMIT 1
         """).fetchone()
-        if fetch_variable < 5:
+        if fetch_variable[0] < 5:
             fetch_variable = self.curr.execute("""
                 SELECT user_prompt, ai_response FROM memory
             """).fetchall()
