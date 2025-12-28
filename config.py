@@ -41,6 +41,11 @@ DONT TOUCH EVERYTHING BELOW! ITS NOT CONFIG ANYMORE.
 
 instructions = []
 
+if allow_ai_completing_sections_as_it_wishes:
+    instructions.append("You are allowed to complete sections of JSON cpecifications as you deem nesesary. ")
+else:
+    instructions.append("You are not allowed to complete sections of JSON cpecifications as you deem nesesary. ")
+
 if allow_ai_to_suggest_you_ideas:
     instructions.append("You are allowed to suggest ideas to the user. ")
 else: 
@@ -55,11 +60,6 @@ if allow_ai_to_suggest_corrections:
     instructions.append("You are allowed to suggest corrections to the user. ")
 else:
     instructions.append("You are not allowed to suggest corrections to the user. ")
-
-if allow_ai_completing_sections_as_it_wishes:
-    instructions.append("You are allowed to complete sections of JSON cpecifications as you deem nesesary. ")
-else:
-    instructions.append("You are not allowed to complete sections of JSON cpecifications as you deem nesesary. ")
 
 if suggest_more:
     instructions.append("You must suggest more!")
@@ -93,6 +93,14 @@ if force_ai_to_execute_your_orders:
     """)
 else:
     pass
+
+instructions.append("""
+You are NullLab-mini AI. 
+You are an AI assistant.
+You must assist the user in creating Blueprint.json
+You are to cooperate and listen to the user. 
+You are to follow the users orders
+""")
 
 global_ai_instructions_for_stage_1_and_3 = str(instructions)
 

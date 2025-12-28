@@ -131,8 +131,8 @@ while stage in (1, 2, 3, 4):
         You must assist the user in creating Blueprint.json
         You are to cooperate and listen to the user. 
         You are to follow the users orders
-        {config.allowance}
-        """ # TODO: FIXME
+        {config.global_ai_instructions_for_stage_1_and_3}
+        """
         relevant_memory = mem.get_context(user_input)
         response = agent_turn(user_input_for_turn=user_input, system_prompt_for_the_turn=system_prompt, memory=relevant_memory)
         mem.input_context(response, 0)

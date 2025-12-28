@@ -16,6 +16,21 @@ import sqlite3
 import numpy as np
 import heapq
 
+class SQLite_row_cache:
+    def __init__(self):
+        self.row = []        
+
+
+class SQLite_cache(SQLite_row_cache):
+    def __init__(self):
+        self.data = []
+
+"""
+Data structure:
+
+
+"""
+
 class LMIA_context_mini:
 
     def __init__(self, DB_path):
