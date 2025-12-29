@@ -16,23 +16,16 @@ import sqlite3
 import numpy as np
 import heapq
 
-class SQLite_row_cache:
-    def __init__(self):
-        self.row = []        
-
-
-class SQLite_cache(SQLite_row_cache):
-    def __init__(self):
-        self.data = []
-
 """
+The data from the DB will be retrieved into the memory once in the get_context method.
+So the structure is actually just a row of rows. 
 Data structure:
+    [[element;element;...];[];...]
 
-
+This kind of system ensures I dont repeat work unneseseraly. 
 """
 
 class LMIA_context_mini:
-
     def __init__(self, DB_path):
         # The DB inialisation
         DB_file = Path(DB_path)
