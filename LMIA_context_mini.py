@@ -16,15 +16,6 @@ import sqlite3
 import numpy as np
 import heapq
 
-"""
-The data from the DB will be retrieved into the memory once in the get_context method.
-So the structure is actually just a row of rows. 
-Data structure:
-    [[element;element;...];[];...]
-
-This kind of system ensures I dont repeat work unneseseraly. 
-"""
-
 class LMIA_context_mini:
     def __init__(self, DB_path):
         # The DB inialisation
