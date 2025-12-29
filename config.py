@@ -6,6 +6,7 @@ Config file for NullLab-mini.
 
 api_key = "set your API key here"
 model = "set your model here"
+max_tool_runs = 10
 
 # AI parameters: 
 allow_ai_to_suggest_you_ideas = True # True or false

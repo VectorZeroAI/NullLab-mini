@@ -20,17 +20,16 @@ Architecture:
 
 print("Initialising ai_chat")
 
-from os import system
 from pydantic import SecretStr
 from rich import print
 
 print("[green]Colors initiated. =)[/green]")
 
-import requests
 import sys
 import LMIA_context_mini
 import config
 import json
+from pathlib import Path
 
 print("[green]basic initialisation completed. [/green]")
 print("[green]initialising langchain agent.[/green]")
@@ -43,7 +42,17 @@ from langchain_core.prompts import ChatPromptTemplate
 # from langchain_community.agent_toolkits.json.base import create_json_agent
 
 print("[green]Everything else initialised[/green]")
-# -- Langchain agent creation! ---------------------------------------------------------------
+
+dump_file = Path("./dump.json")
+if dump_file.is_file():
+    with open("./dump.json", "rw") as f:
+        save_file_json = json.load(f)
+        if save_file_json:
+            raise NotImplementedError()
+
+        # TODO: Finish this
+else:
+    print("No save file was found. Starting a new conversation.")
 
 # Json loading
 try:
@@ -53,9 +62,9 @@ except Exception as e:
     print("[red] ERROR: DIDNT FIND blueprint.json file. [/red]")
     print(f"For debug purpuses: Error is: {e}")
     print("[red]creating an empty blueprint.json file.[/red]")
-    from pathlib import Path
     bluep = Path("./blueprint.json")
     bluep.touch()
+    bluep.write_text("{}")
     data_blueprint = json.load(open("blueprint.json"))
 
 # Creation of tools.
@@ -76,8 +85,8 @@ llm = ChatOpenAI(
 llm = llm.bind_tools(tools)
 
 prompt = ChatPromptTemplate.from_messages([
-        ("system", "{system_prompt}"),
-        ("memory", "{memory}"),
+        ("system", "{system_prompt},"),
+        ("system", "Relevant memory: {memory}"),
         ("human", "{input}")
     ])
 
@@ -88,26 +97,20 @@ print("defining funktions")
 def agent_turn(user_input_for_turn, system_prompt_for_the_turn, memory):
     messange = prompt.invoke({"input": user_input_for_turn, "system_prompt": system_prompt_for_the_turn, "memory": memory}).to_messages()
 
-    while True:
-        AIMessage = llm.invoke(messange)
-        messange.append(AIMessage)
+    for _ in range(config.max_tool_runs):
+        ai_message = llm.invoke(messange)
+        messange.append(ai_message)
 
-        if not AIMessage.tool_calls:
-            return AIMessage.content
+        if not ai_message.tool_calls:
+            return ai_message.content
         
-        for call in AIMessage.tool_calls:
+        for call in ai_message.tool_calls:
             tool = tools_by_name[call["name"]]
             result = tool.invoke(call["args"])
 
             messange.append(ToolMessage(content=str(result), tool_call_id=call["id"]))
             
-
-api_url = "https://openrouter.ai/api/v1/chat/completions"
-headers = {
-        "Authorization": f"Bearer {config.api_key}",
-        "Content-Type": "application/json"
-    }
-
+    raise RuntimeError("AI tried doing to many tool calls. If you think it did everything correctly, increase the max_tool_runs config parameter. Else do nothing and just retry.")
 stage = 1
 mem = LMIA_context_mini.LMIA_context_mini(DB_path="./DB.db") # Memory initialisation
 
