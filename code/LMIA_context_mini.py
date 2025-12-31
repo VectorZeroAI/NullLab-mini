@@ -15,55 +15,88 @@ from sentence_transformers import SentenceTransformer
 import sqlite3
 import numpy as np
 import heapq
+from rich import print
+
 
 class LMIA_context_mini:
-    def __init__(self, DB_path):
-        # The DB inialisation
+    """
+    The main plugin class.
+
+    DB_path is the path to the DB file.
+    interactive is bool telling wether the enviroment of execution is interactive or not. 
+    Setting to true may allow for interactive error handling, while setting to False removes those. 
+    """
+    def __init__(self, DB_path, interactive):
+        """
+    Instanse constructor. 
+    I will use it as one.
+    All the instanse creation logic is consentrated here. 
+        """
+        if DB_path is None:
+            if interactive:
+                print("[red] DB_path is None. [/red]")
+                print("default to ./DB.db filepath ? ")
+                if input("Y/N : ").strip().lower() in ("y", "yes"):
+                    DB_path = "./DB.db"
+                else:
+                    print("aborting")
+                    raise RuntimeError("DB_path is None. DB_path is required.")
+            else:
+                raise RuntimeError("DB_path not given.")
+
         DB_file = Path(DB_path)
 
-        if DB_file.exists() and DB_file.is_file():
+        self.interactive = interactive
+
+        if DB_file.is_file():
             try:
                 self.conn = sqlite3.connect(DB_file)
                 self.curr = self.conn.cursor()
             except sqlite3.Error as e:
                 print(f"file found under {DB_path} , but unable to connect to. {e}")
-                action = None
-                action = input("delete it and reinitialise? Yes means delete and reinitialise the DB, No means aborting execution.")
-                action = action.lower()
-                if action == "yes" or action == "y":
-                    DB_file.unlink() # This means delete
-                    DB_file.touch()
-                    self.conn = sqlite3.connect(DB_file)
-                    self.curr = self.conn.cursor()
-                        
-                elif action == "No" or action == "no" or action == "n" or action == "NO":
-                    raise RuntimeError("aborting execution")
+                if interactive:
+                    action = None
+                    action = input("delete it and reinitialise? Yes means delete and reinitialise the DB, No means aborting execution.")
+                    action = action.lower()
+                    if action == "yes" or action == "y":
+                        DB_file.unlink() # This means delete
+                        DB_file.touch()
+                        self.conn = sqlite3.connect(DB_file)
+                        self.curr = self.conn.cursor()
+                            
+                    elif action == "No" or action == "no" or action == "n" or action == "NO":
+                        raise RuntimeError("aborting execution")
+                    else:
+                        raise RuntimeError(f"Aborting execution. Invalid action code supplied. Supplied {action}, expected: Yes or No")
                 else:
-                    raise RuntimeError(f"Aborting execution. Invalid action code supplied. Supplied {action}, expected: Yes or No")
+                    raise RuntimeWarning(f"Unable to connect to data base file under given path.")
 
         elif DB_file.exists() and not DB_file.is_file():
-            print(f"Something under the supplied path was found, but its not a file. Given path = {DB_path} What to do?")
-            print("1 = delete whatever there is and create the DB file. ")
-            print("0 = abort the execution")
-            action = input("Enter action code")
-            if action == "1":
-                try:
-                    DB_file.unlink() # This means delete
-                    DB_file.touch()  # This means create
-                    self.conn = sqlite3.connect(DB_path)  # This is just connecting
-                    self.curr = self.conn.cursor()
+            if interactive:
+                print(f"Something under the supplied path was found, but its not a file. Given path = {DB_path} What to do?")
+                print("1 = delete whatever there is and create the DB file. ")
+                print("0 = abort the execution")
+                action = input("Enter action code")
+                if action == "1":
+                    try:
+                        DB_file.unlink() # This means delete
+                        DB_file.touch()  # This means create
+                        self.conn = sqlite3.connect(DB_path)  # This is just connecting
+                        self.curr = self.conn.cursor()
 
-                except OSError as e:
-                    print(f"failed. Errors: {e}")
-                    raise RuntimeError("FATAL. Aborting execution.")
+                    except OSError as e:
+                        print(f"failed. Errors: {e}")
+                        raise RuntimeError("FATAL. Aborting execution.")
 
-            elif action == "0":
-                raise RuntimeError("Aborting Execution.")
-            
+                elif action == "0":
+                    raise RuntimeError("Aborting Execution.")
+                
+                else:
+                    raise RuntimeError(f"Invalid action code supplied. Supplied {action} , expected 1 or 0")
+                
+                # This sequense is supposed to establish the connection named conn. 
             else:
-                raise RuntimeError(f"Invalid action code supplied. Supplied {action} , expected 1 or 0")
-            
-            # This sequense is supposed to establish the connection named conn. 
+                raise RuntimeError("The given path is not a connectable file. ")
         
         print("Connection sucsessfullly established.")
         print("magiking the types into understanding. ")
@@ -283,4 +316,39 @@ class LMIA_context_mini:
                                              """).fetchall()
         return f"{final_2_most_similar_user_prompts}, {corresponding_ai_responses}, {similar_ai_responses}, {last_5_messenges}"
 
+
+    def __db_deletion_funk__(self):
+        """
+    Helper function of the clear memory method, and an abstraction. 
+    Deletes everything from the DB. 
+    Direct use is not recommended, usage of the clear_memory method is recommeneded
+        """
+        try:
+            self.curr.execute("""
+            DELETE * FROM memory
+            """)
+            self.conn.commit()
+        except RuntimeError as e:
+            print(f"The following error occured: {e}")
+            print("[red] DELETION FAILED [/red]")
+            raise RuntimeWarning("DELETION FAILED") from e
+
+
+    def clear_memory(self):
+        """
+    Method for clearing the memory DB. Clears the Database. Doesnt clear the variables. 
+    Traling variables may still be there. To remove them, restart the programm. 
+        """
+        if self.interactive:
+            print("[red] Are you sure you want to errase the memory ? [/red]")
+            print("[red][bold] ITS IRREVERSABLE [/bold][/red]")
+            answer = input("configration (Y/N) : ").lower().strip()
+            if answer in ("y", "yes"):
+                self.__db_deletion_funk__()
+            else:
+                print("aborting deletion")
+        else:
+            print("initiating deletion without requiring confirmation due to non interactivity of the execution enviroment. ")
+            self.__db_deletion_funk__()
+            
 
