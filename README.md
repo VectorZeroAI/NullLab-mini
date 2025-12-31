@@ -63,7 +63,15 @@ Blueprint Json contains the specification of the target programm. It specifies w
 #### Spec : plan.json :
 
 ~~~json
-TODO: FIXME
+{
+"plan": [
+	{
+		"module_name": "module name here",
+		"instruction": "detailed instruction on how to write the module",
+		"note": "note here, optionaly"
+	}
+  ]
+}
 ~~~
 
 ## AI based JSON to actual code compiler:
