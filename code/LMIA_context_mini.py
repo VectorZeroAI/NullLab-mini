@@ -4,6 +4,10 @@ Version 0.1
 """
 
 # Imports
+
+print("import sequense beginns")
+
+from enum import IntEnum
 from pathlib import Path
 from sentence_transformers import SentenceTransformer
 import sqlite3
@@ -11,8 +15,14 @@ import numpy as np
 import heapq
 from rich import print
 
+print("imports finished with no errors. Else you wouldnt see this ! ")
+
 
 class LMIA_context_mini:
+    class Origin(IntEnum):
+        AI = 0
+        User = 1
+
     """
     The main plugin class.
 
@@ -118,11 +128,26 @@ class LMIA_context_mini:
         """
     The method to input content into the memory. 
     prompt is the content to input. 
-    origin is the binary value defining the origin of the text of the memory (prompt)
-    1 == user
-    0 == ai
+    origin is an enum of Origin class objekt. 
+    asign via .origin.ai/user
         """
         print(f"prompt {prompt} recived")
+        if isinstance(origin, IntEnum):
+            origin = int(origin)
+        elif isinstance(origin, int):
+            pass
+        else:
+            if self.interactive:
+                print("[red] invalid origin type. [/red] Are you sure the input is correct, and can be compare to int via == ? ")
+                if input("Y/N : ").strip().lower() in ("yes", "y"):
+                    pass
+                else:
+                    raise TypeError("invalid type.")
+            else:
+                raise TypeError(f"invalid type. Expected IntEnum or int, got {type(origin)}")
+
+        print("origin of type {}")
+
         print("perofrming SQL operations")
 
         if origin == 1: 
