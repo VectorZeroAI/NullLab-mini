@@ -43,15 +43,9 @@ extandable amount of rows, stable amount of collums.
 1. UUID PRIMARY KEY AUTOINCREMENT
 2. user_prompt TEXT
 3. ai_response TEXT
-<<<<<<< HEAD
 4. embedded_user_prompt BLOB
 5. embedded_ai_response BLOB
 6. timestamp TIMESTAMP
-=======
-4. embedded_user_prompt *whatever the fuck the embedding is*
-5. embedded_ai_response *whatever the fuck the embedding is*
-6. timestamp TIMESTAMP *or however its actually called.*
->>>>>>> 972256a4674e34a92813b35f16fc8494725c7a25
 
 ### Context retrieval method
 
@@ -59,15 +53,23 @@ The method is clever:
 
 2 most similar user prompts + the AI responses to them + 3 most similar AI responses to each one of those + 5 last messenges. 
 
-The actually numbers should be config tweakable, but I will implement that in the next version. #TODO: IMPLEMENT configurable numbers
-<<<<<<< HEAD
+The actually numbers should be config tweakable, but I will implement that in the next version. 
+#TODO: IMPLEMENT configurable numbers
 
 #### The actual funktion architecture:
 Execution audict (for future me to understand the fuck its doing)
-1. First, fetch all the embedded_user_prompt BLOBs
-2. Then convert them to proper numpy arrays. **Important** Dont fuck up the order.
-3. Then define the similarity_list, that is used to gather all the similarities. **Important**: DONT OVERWRITE THE ORIGINAL LIST, else there is no way in hell to know from wich ROW the embedding was from.
-4. The loop through the list of the fetched user prompt embeddings to get similarity, and append every similarity to the similarity_list.
-5. Then get the biggest embedding out of the list. 
-=======
->>>>>>> 972256a4674e34a92813b35f16fc8494725c7a25
+1. Check if these are enough inputs in the database, if yes, prossed, if no, return everything. 
+2. First, fetch all the embedded_user_prompt BLOB
+3. Then convert them to proper numpy arrays. **Important** Dont fuck up the order.
+4. Then define the similarity_list, that is used to gather all the similarities. **Important**: DONT OVERWRITE THE ORIGINAL LIST, else there is no way in hell to know from wich ROW the embedding was from.
+5. The loop through the list of the fetched user prompt embeddings to get similarity, and append every similarity to the similarity_list.
+6. Then get the 2 biggest embeddings out of the list
+7. Then get their row numbers via .index.
+8. Then we get the corresponding ai responses. 
+9. Then per each ai response similar responses. 
+10. Then we get the last 5 exchanges via ordering by Timestamp. 
+
+Thats basicaly it. 
+I compressed the logic, because its pretty much self explanatory if we look at the code. 
+Its basicaly the same thing as in the first half, just over new set of data. 
+With some creativity, you could even abstract the thing into a function that can be called twice, although that is not a practical solution. 
