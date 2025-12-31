@@ -116,6 +116,7 @@ mem = LMIA_context_mini.LMIA_context_mini(DB_path="./DB.db") # Memory initialisa
 
 # Variable mess.
 error_action = None
+_flag_first_time = True
 
 # Main loop
 while stage in (1, 2, 3, 4):
@@ -124,63 +125,73 @@ while stage in (1, 2, 3, 4):
     if user_input.lower() in ("exit", "quit"):
         prev_stage = stage
         error_action = "exit"
+    elif user_input.lower == "COMMAND:go_next_stage":
+        stage =+ 1
+        _flag_first_time = True
+
     mem.input_context(user_input, 1) # NOTE: 0 == ai , 1 == user
 
     # This is the response handling
     if stage == 1:
-        system_prompt = config.global_ai_instructions_for_stage_1_and_3
-        
-        system_prompt = system_prompt + """
-        Your goal is, to collaboratively with the user, create the Blueprint.json . 
-        Blueprint.json is a plan for a programm that the user wants to create. 
-        It must be cristal clear, without any underspecifications, and follow a strict shema. 
-        This is an example of Blueprint.json: 
+        if _flag_first_time:
+            system_prompt = config.global_ai_instructions_for_stage_1_and_3
+            
+            system_prompt = system_prompt + """
+            Your goal is, to collaboratively with the user, create the Blueprint.json . 
+            Blueprint.json is a plan for a programm that the user wants to create. 
+            It must be cristal clear, without any underspecifications, and follow a strict shema. 
+            This is an example of Blueprint.json: 
 
 
-        {
-            "full_workflow_description": "workflow",
-            "modules": [
-                {
-                    "module_name": "Insert ModuleName",
-                    "main_function": {
-                        "name": "insert funktion name",
-                        "workflow": "inser funktion high level workflow here",
-                        "return": "insert the returned values, what they mean, and their types. ",
-                        "depends_on": ["list", "of", "funktions", "and", "modules", "this", "funktion", "depends", "on"]
-                    },    
-                    
-                    "funktions": [
-                        {
+            {
+                "full_workflow_description": "workflow",
+                "modules": [
+                    {
+                        "module_name": "Insert ModuleName",
+                        "main_function": {
                             "name": "insert funktion name",
                             "workflow": "inser funktion high level workflow here",
                             "return": "insert the returned values, what they mean, and their types. ",
                             "depends_on": ["list", "of", "funktions", "and", "modules", "this", "funktion", "depends", "on"]
-                        }
-                    ],
-                    "requirements": [
-                        {
-                            "import_name": "Library or module name here",
-                            "use_cases": [
-                                {
-                                    "funktion": "Insert funktion name here",
-                                    "workflow": "Insert funktion workflow here",
-                                    "note": "Insert How? Why? Where? here."
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ],
-            "dependancy_graph": [
-                {
-                    "funktion_name": "name",
-                    "depends_on": "funktion_name" 
-                }
-            ]
-        }
-        Blueprint.json MUST FOLLOW THIS SHEMA. 
-        """
+                        },    
+                        
+                        "funktions": [
+                            {
+                                "name": "insert funktion name",
+                                "workflow": "inser funktion high level workflow here",
+                                "return": "insert the returned values, what they mean, and their types. ",
+                                "depends_on": ["list", "of", "funktions", "and", "modules", "this", "funktion", "depends", "on"]
+                            }
+                        ],
+                        "requirements": [
+                            {
+                                "import_name": "Library or module name here",
+                                "use_cases": [
+                                    {
+                                        "funktion": "Insert funktion name here",
+                                        "workflow": "Insert funktion workflow here",
+                                        "note": "Insert How? Why? Where? here."
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "dependancy_graph": [
+                    {
+                        "funktion_name": "name",
+                        "depends_on": "funktion_name" 
+                    }
+                ]
+            }
+            Blueprint.json MUST FOLLOW THIS SHEMA. 
+            """
 
+            _flag_first_time = False
+        else:
+            pass
+            # Note: Moving to normal execution. 
+        
         relevant_memory = mem.get_context(user_input)
         response = agent_turn(user_input_for_turn=user_input, system_prompt_for_the_turn=system_prompt, memory=relevant_memory)
         mem.input_context(response, 0)
@@ -189,7 +200,29 @@ while stage in (1, 2, 3, 4):
 
 
     elif stage == 2:
-        pass
+        if _flag_first_time:
+            print("[yellow]Moved to stage 2. [/yellow]")
+            print("[red]Would you like to clear Ais memory or[/red]")
+            answer = input("(Y/N/Abort) : ").lower().strip()
+            if answer in ("yes", "y"):
+                print("[red] Are you sure you want to clear AI memory ? [/red]")
+                if input().lower().strip() in ("yes", "y"):
+                    raise NotImplementedError("Plugin doesnt yet have a function to.")
+                    #mem.clear_memory() # TODO: Implement the clear_memory() method. 
+                else:
+                    print("[red]aborting clearanse. [/red]")
+            else:
+                print("keeping the memory.")
+                _flag_first_time = False    # NOTE: DONT FORGET. 
+        else:
+            pass
+
+        system_prompt = config.global_ai_instructions
+        system_prompt = system_prompt + """
+        """ #TODO: FIXME
+        raise NotImplementedError("line 217. Stage 2. repo/code/ai_chat.py")
+
+
     elif stage == 3:
         pass
     elif stage == 4:
