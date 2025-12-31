@@ -3,12 +3,6 @@ LMIA context plugin, mini edition
 Version 0.1
 """
 
-"""
-PLAN: 
-    Is located at: 
-        ./LMIA_context_mini_doc.md 
-"""
-
 # Imports
 from pathlib import Path
 from sentence_transformers import SentenceTransformer
@@ -99,10 +93,6 @@ class LMIA_context_mini:
                 raise RuntimeError("The given path is not a connectable file. ")
         
         print("Connection sucsessfullly established.")
-        print("magiking the types into understanding. ")
-
-        print("Doing SQL stuff (Assuming the table is there)")
-
 
         self.curr.execute("""CREATE TABLE IF NOT EXISTS memory(
               UUID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -122,9 +112,16 @@ class LMIA_context_mini:
 
         self.embedder = SentenceTransformer("all-MiniLM-L6-v2")
 
-        print("init state is over")
+        print("[green]construction of the class completed with.[/green]")
 
     def input_context(self, prompt, origin):
+        """
+    The method to input content into the memory. 
+    prompt is the content to input. 
+    origin is the binary value defining the origin of the text of the memory (prompt)
+    1 == user
+    0 == ai
+        """
         print(f"prompt {prompt} recived")
         print("perofrming SQL operations")
 
@@ -169,6 +166,10 @@ class LMIA_context_mini:
         print("sucsessfully inputed the data.")
 
     def get_context(self, prompt):
+        """
+    THe method to retrieve context from the memory. 
+    prompt is the user prompt that would be used to querrie the database. 
+        """
         # First, check if there are enough messenges to work with. Min = 5
         fetch_variable = self.curr.execute("""
             SELECT UUID FROM memory ORDER BY UUID DESC LIMIT 1
