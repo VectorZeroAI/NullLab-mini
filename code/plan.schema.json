@@ -1,0 +1,22 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type":"object",
+    "properties": {
+        "plan":{
+            "type":"array",
+            "items": {
+                "type":"object",
+                "properties": {
+                    "module_name": {"type":"string"},
+                    "instruction": {"type":"string"},
+                    "note": {"type":"string"}
+                },
+                "additionalProperties":false,
+                "required": ["module_name", "instruction", "note"]
+            },
+            "additionalProperties":false
+        }
+    },
+    "additionalProperties":false,
+    "required": ["plan"]
+}

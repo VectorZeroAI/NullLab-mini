@@ -20,16 +20,17 @@ Architecture:
 
 print("Initialising ai_chat")
 
-from pydantic import SecretStr
 from rich import print
 
 print("[green]Colors initiated. =)[/green]")
 
+from pydantic import SecretStr
 import sys
 import LMIA_context_mini
 import config
 import json
 from pathlib import Path
+from jsonschema import validate, ValidationError
 
 print("[green]basic initialisation completed. [/green]")
 print("[green]initialising langchain agent.[/green]")
@@ -67,10 +68,30 @@ except Exception as e:
     bluep.write_text("{}")
     data_blueprint = json.load(open("blueprint.json"))
 
-# Creation of tools.
-spec = JsonSpec(dict_=data_blueprint)
-toolkit = JsonToolkit(spec=spec)
-tools = toolkit.get_tools()
+try:
+    global data_plan
+    data_plan = json.load(open("plan.json"))
+except Exception as e:
+    print("[red] ERROR: DIDNT FIND plan.json file. [/red]")
+    print(f"For debug purpuses: Error is: {e}")
+    print("[red]creating an empty plan.json file.[/red]")
+    pla = Path("./plan.json")
+    pla.touch()
+    pla.write_text("{}")
+    data_plan = json.load(open("plan.json"))
+
+# Creation of tools for blueprint.json
+spec_blueprint = JsonSpec(dict_=data_blueprint)
+toolkit_blueprint = JsonToolkit(spec=spec_blueprint)
+tools_blueprint = toolkit_blueprint.get_tools()
+
+# Creation of tools for plan.json
+spec_plan = JsonSpec(dict_=data_plan)
+toolkit_plan = JsonToolkit(spec=spec_plan)
+tools_plan = toolkit_plan.get_tools()
+
+# Merge tools
+tools = tools_blueprint + tools_plan
 
 tools_by_name = {tool.name: tool for tool in tools}
 
@@ -93,6 +114,31 @@ prompt = ChatPromptTemplate.from_messages([
 print("[bold][italic][red]Hello, human. Welcome to NullLab-mini chat[/red][/italic][/bold]")
 
 print("defining funktions")
+
+def test(stage_for_this_func):
+    """
+    function to test the work of ai with. 
+    returns True if valid, False if invalid. 
+    needs current stage_for_this_func given, although it can default to loading stage variable. 
+    """
+    if stage_for_this_func == None:
+        stage_for_this_func = stage
+
+    if stage_for_this_func == 1:
+        with open("./blueprint.schema.json") as f:
+            schema = json.load(f)
+        validation = validate(data_blueprint, schema)
+        return validation
+    elif stage_for_this_func == 2:
+        return True
+    elif stage_for_this_func == 3:
+         with open("./plan.schema.json") as f:
+            schema = json.load(f)
+         validation = validate(data_plan, schema)
+         return validation
+       
+    elif stage_for_this_func == 4:
+        return True
 
 def agent_turn(user_input_for_turn, system_prompt_for_the_turn, memory):
     messange = prompt.invoke({"input": user_input_for_turn, "system_prompt": system_prompt_for_the_turn, "memory": memory}).to_messages()
@@ -126,8 +172,12 @@ while stage in (1, 2, 3, 4):
         prev_stage = stage
         error_action = "exit"
     elif user_input.lower == "COMMAND:go_next_stage":
-        stage =+ 1
-        _flag_first_time = True
+        passsed = test(stage)
+        if passed:
+            stage =+ 1
+            _flag_first_time = True
+        else:
+            print("[red] shema verification failed [/red]")
 
     mem.input_context(user_input, 1) # NOTE: 0 == ai , 1 == user
 
