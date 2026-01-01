@@ -20,10 +20,12 @@
                             "depends_on":{
                                 "type":"array",
                                 "properties": {
-                                    "items":{"type":"string"}
+                                    "items":{"type":"string"},
+                                   "additionalProperties":false
                                 }
                             }
-                        }
+                        },
+                        "additionalProperties":false
                     },
                     "functions": {
                         "type":"array",
@@ -33,14 +35,17 @@
                                 "name": {"type": "string"},
                                 "workflow":{"type": "string"},
                                 "return":{"type": "string"},
-                            "depends_on":{
-                                "type":"array",
-                                "properties": {
-                                    "items":{"type":"string"}
-                                    }
+                                "depends_on":{
+                                    "type":"array",
+                                    "items": {
+                                        "type":"string"
+                                    },
+                                    "additionalProperties":false
                                 }
-                            }
-                        }
+                            },
+                            "additionalProperties":false
+                        },
+                        "additionalProperties":false
                     },
                     "requirements": {
                         "type":"array",
@@ -56,14 +61,20 @@
                                             "function": {"type":"string"},
                                             "workflow":{"type":"string"},
                                             "note": {"type":"string"}
-                                        }
-                                    }
+                                        },
+                                        "additionalProperties":false
+                                    },
+                                    "additionalProperties":false
                                 }
-                            }
-                        }
+                            },
+                            "additionalProperties":false
+                        },
+                        "additionalProperties":false
                     }
-                }
-            }
+                },
+                "additionalProperties":false
+            },
+            "additionalProperties":false
         },
         "dependancy_graph":{
             "type":"array",
@@ -72,8 +83,11 @@
                 "properties":{
                     "function_name": {"type":"string"},
                     "depends_on":{"type":"string"}
-                }
-            }
+                },
+                "additionalProperties":false
+            },
+            "additionalProperties":false
         }
-    }
+    },
+    "additionalProperties":false
 }
