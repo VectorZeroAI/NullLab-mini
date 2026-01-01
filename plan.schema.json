@@ -10,8 +10,13 @@
                     "module_name": {"type":"string"},
                     "instruction": {"type":"string"},
                     "note": {"type":"string"}
-                }
-            }
+                },
+                "additionalProperties":false,
+                "required": ["module_name", "instruction", "note"]
+            },
+            "additionalProperties":false
         }
-    }
+    },
+    "additionalProperties":false,
+    "required": ["plan"]
 }
