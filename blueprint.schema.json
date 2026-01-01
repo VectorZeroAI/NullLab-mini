@@ -2,9 +2,7 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
     "properties": {
-        "full_workflow_description": {
-            "type": "string"
-        },
+        "full_workflow_description": {"type": "string"},
         "modules": {
             "type": "array",
             "items": {
@@ -22,7 +20,8 @@
                                 "properties": {
                                     "items":{"type":"string"},
                                    "additionalProperties":false
-                                }
+                                },
+                                "additionalProperties":false
                             }
                         },
                         "additionalProperties":false
@@ -40,7 +39,8 @@
                                     "items": {
                                         "type":"string"
                                     },
-                                    "additionalProperties":false
+                                    "additionalProperties":false,
+                                    "required": ["name", "workflow", "return", "depends_on"]
                                 }
                             },
                             "additionalProperties":false
@@ -62,17 +62,20 @@
                                             "workflow":{"type":"string"},
                                             "note": {"type":"string"}
                                         },
-                                        "additionalProperties":false
+                                        "additionalProperties":false,
+                                        "required": ["function", "workflow", "note"]
                                     },
                                     "additionalProperties":false
                                 }
                             },
-                            "additionalProperties":false
+                            "additionalProperties":false,
+                            "required": ["import_name", "use_cases"]
                         },
                         "additionalProperties":false
                     }
                 },
-                "additionalProperties":false
+                "additionalProperties":false,
+                "required": ["module_name", "main_function"]
             },
             "additionalProperties":false
         },
@@ -84,10 +87,12 @@
                     "function_name": {"type":"string"},
                     "depends_on":{"type":"string"}
                 },
-                "additionalProperties":false
+                "additionalProperties":false,
+                "required": ["function_name", "depends_on"]
             },
             "additionalProperties":false
         }
     },
-    "additionalProperties":false
+    "additionalProperties":false,
+    "required": ["full_workflow_description", "modules", "dependancy_graph"]
 }
