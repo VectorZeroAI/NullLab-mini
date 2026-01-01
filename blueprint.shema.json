@@ -1,6 +1,6 @@
 {
-    "$shema": "https://json-shema.org/draft/2020-12/schema",
-    "type": "objekt",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
     "properties": {
         "full_workflow_description": {
             "type": "string"
@@ -8,11 +8,11 @@
         "modules": {
             "type": "array",
             "items": {
-                "type": "objekt",
+                "type": "object",
                 "properties": {
                     "module_name": {"type": "string"},
                     "main_function": {
-                        "type": "objekt",
+                        "type": "object",
                         "properties": {
                             "name": {"type": "string"},
                             "workflow": {"type": "string"}, 
@@ -28,7 +28,7 @@
                     "functions": {
                         "type":"array",
                         "items": {
-                            "type":"objekt",
+                            "type":"object",
                             "properties":{
                                 "name": {"type": "string"},
                                 "workflow":{"type": "string"},
@@ -45,13 +45,13 @@
                     "requirements": {
                         "type":"array",
                         "items":{
-                            "type":"objekt",
+                            "type":"object",
                             "properties":{
                                 "import_name":{"type":"string"},
                                 "use_cases": {
                                     "type":"array",
                                     "items":{
-                                        "type":"objekt",
+                                        "type":"object",
                                         "properties":{
                                             "function": {"type":"string"},
                                             "workflow":{"type":"string"},
@@ -68,7 +68,7 @@
         "dependancy_graph":{
             "type":"array",
             "items":{
-                "type":"objekt",
+                "type":"object",
                 "properties":{
                     "function_name": {"type":"string"},
                     "depends_on":{"type":"string"}
