@@ -1,0 +1,79 @@
+{
+    "$shema": "https://json-shema.org/draft/2020-12/schema",
+    "type": "objekt",
+    "properties": {
+        "full_workflow_description": {
+            "type": "string"
+        },
+        "modules": {
+            "type": "array",
+            "items": {
+                "type": "objekt",
+                "properties": {
+                    "module_name": {"type": "string"},
+                    "main_function": {
+                        "type": "objekt",
+                        "properties": {
+                            "name": {"type": "string"},
+                            "workflow": {"type": "string"}, 
+                            "return": {"type": "string"},
+                            "depends_on":{
+                                "type":"array",
+                                "properties": {
+                                    "items":{"type":"string"}
+                                }
+                            }
+                        }
+                    },
+                    "functions": {
+                        "type":"array",
+                        "items": {
+                            "type":"objekt",
+                            "properties":{
+                                "name": {"type": "string"},
+                                "workflow":{"type": "string"},
+                                "return":{"type": "string"},
+                            "depends_on":{
+                                "type":"array",
+                                "properties": {
+                                    "items":{"type":"string"}
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "requirements": {
+                        "type":"array",
+                        "items":{
+                            "type":"objekt",
+                            "properties":{
+                                "import_name":{"type":"string"},
+                                "use_cases": {
+                                    "type":"array",
+                                    "items":{
+                                        "type":"objekt",
+                                        "properties":{
+                                            "function": {"type":"string"},
+                                            "workflow":{"type":"string"},
+                                            "note": {"type":"string"}
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "dependancy_graph":{
+            "type":"array",
+            "items":{
+                "type":"objekt",
+                "properties":{
+                    "function_name": {"type":"string"},
+                    "depends_on":{"type":"string"}
+                }
+            }
+        }
+    }
+}
