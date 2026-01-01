@@ -172,7 +172,7 @@ while stage in (1, 2, 3, 4):
         prev_stage = stage
         error_action = "exit"
     elif user_input.lower == "COMMAND:go_next_stage":
-        passsed = test(stage)
+        passed = test(stage)
         if passed:
             stage =+ 1
             _flag_first_time = True
