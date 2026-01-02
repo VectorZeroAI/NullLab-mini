@@ -1,12 +1,8 @@
+#!/usr/bin/env python3
 """
 LMIA context plugin, mini edition
 Version 0.1
 """
-
-# Imports
-
-print("import sequense beginns")
-
 from enum import IntEnum
 from pathlib import Path
 from sentence_transformers import SentenceTransformer
@@ -73,7 +69,7 @@ class LMIA_context_mini:
                     else:
                         raise RuntimeError(f"Aborting execution. Invalid action code supplied. Supplied {action}, expected: Yes or No")
                 else:
-                    raise RuntimeWarning(f"Unable to connect to data base file under given path.")
+                    raise RuntimeWarning(f"Unable to connect to data base file under given path. given path {DB_path}")
 
         elif DB_file.exists() and not DB_file.is_file():
             if interactive:
@@ -376,5 +372,5 @@ class LMIA_context_mini:
         else:
             print("initiating deletion without requiring confirmation due to non interactivity of the execution enviroment. ")
             self.__db_deletion_funk__()
+        return True
             
-

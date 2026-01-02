@@ -122,14 +122,14 @@ def state0():
                     pass
                 else:
                     print(f"[red]file {name} not found.[/red]")            # Just a simple check. 
-                    if flag_file_not_found == None: 
+                    if flag_file_not_found is None: 
                         flag_file_not_found = 0
                     else:
                         flag_file_not_found =+ 1
                     
             
             # if True, break, if false, pass.
-            if flag_file_not_found != None:
+            if flag_file_not_found is not None:
                 print(f"[red]Projekt not found on {dir}[/red]")
                 if input("initialise an empty projekt?").lower in ("y", "yes"):
                     
