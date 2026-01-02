@@ -172,7 +172,7 @@ while stage in (1, 2, 3, 4):
             print("[red] shema verification failed [/red]")
 
     mem.input_context(user_input, 1) # NOTE: 0 == ai , 1 == user
-
+                                     # NOTE: There is also an enum implemented for that. its called 
     # This is the response handling
     if stage == 1:
         if _flag_first_time:
@@ -249,20 +249,27 @@ while stage in (1, 2, 3, 4):
             if answer in ("yes", "y"):
                 print("[red] Are you sure you want to clear AI memory ? [/red]")
                 if input().lower().strip() in ("yes", "y"):
-                    raise NotImplementedError("Plugin doesnt yet have a function to.")
-                    #mem.clear_memory() # TODO: Implement the clear_memory() method. 
+                    mem.clear_memory()
                 else:
                     print("[red]aborting clearanse. [/red]")
             else:
                 print("keeping the memory.")
                 _flag_first_time = False    # NOTE: DONT FORGET. 
+            system_prompt = config.global_ai_instructions
+            system_prompt = system_prompt + """
+            Your task is to check if the existing blueprint.json is describing the programm user wants. 
+            Question the user about how he wishes the programm to be, and bring up any mismatches with what blueprint.json specifies. 
+            """ 
         else:
             pass
 
-        system_prompt = config.global_ai_instructions
-        system_prompt = system_prompt + """
-        """ #TODO: FIXME
-        raise NotImplementedError("line 217. Stage 2. repo/code/ai_chat.py")
+        relevant_memory = mem.get_context(user_input)
+        response = agent_turn(user_input_for_turn=user_input, system_prompt_for_the_turn=system_prompt, memory=relevant_memory)
+        mem.input_context(response, 0)
+        print("[green]AI answers: [/green]")
+        print(f"{response}")
+
+
 
 
     elif stage == 3:
