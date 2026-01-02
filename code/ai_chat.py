@@ -1,8 +1,26 @@
 #!/usr/bin/env python3
+from rich import print
+from pydantic import SecretStr
+import sys
+import LMIA_context_mini
+import config
+import json
+from pathlib import Path
+from jsonschema import validate
+from langchain_openai import ChatOpenAI
+from langchain_community.agent_toolkits.json.toolkit import JsonToolkit
+from langchain_community.tools.json.tool import JsonSpec
+from langchain_core.messages import ToolMessage
+from langchain_core.prompts import ChatPromptTemplate
+# from langchain_community.agent_toolkits.json.base import create_json_agent
+
+print("[green]Everything else initialised[/green]")
+
 """
 NullLab-mini subfile. 
 ai_chat module for state1 of main.py
 """
+
 
 """
 Architecture: 
@@ -16,33 +34,7 @@ Architecture:
             3. Plan creation
             4. Plan validation
 """
-# NOTE: I dont need the second horisontal split, since only 1 file is modified and worked on at a time. 
 
-print("Initialising ai_chat")
-
-from rich import print
-
-print("[green]Colors initiated. =)[/green]")
-
-from pydantic import SecretStr
-import sys
-import LMIA_context_mini
-import config
-import json
-from pathlib import Path
-from jsonschema import validate, ValidationError
-
-print("[green]basic initialisation completed. [/green]")
-print("[green]initialising langchain agent.[/green]")
-
-from langchain_openai import ChatOpenAI
-from langchain_community.agent_toolkits.json.toolkit import JsonToolkit
-from langchain_community.tools.json.tool import JsonSpec
-from langchain_core.messages import HumanMessage, ToolMessage, AIMessage
-from langchain_core.prompts import ChatPromptTemplate
-# from langchain_community.agent_toolkits.json.base import create_json_agent
-
-print("[green]Everything else initialised[/green]")
 
 dump_file = Path("./dump.json")
 if dump_file.is_file():
@@ -121,7 +113,7 @@ def test(stage_for_this_func):
     returns True if valid, False if invalid. 
     needs current stage_for_this_func given, although it can default to loading stage variable. 
     """
-    if stage_for_this_func == None:
+    if stage_for_this_func is None:
         stage_for_this_func = stage
 
     if stage_for_this_func == 1:
@@ -293,3 +285,4 @@ while stage in (1, 2, 3, 4):
                 sys.exit("Yep, just exiting")
 else:
     sys.exit("WTF HAPPENED HERE?")
+
