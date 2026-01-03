@@ -183,8 +183,6 @@ The main problem is: How will the user see the files, and how to make the collab
 Done for today!!!
 """
 
-#TODO: make shemas for json. 
-
 def state1():
     while True:
         print("initialising tmux session")
@@ -222,7 +220,6 @@ def state1():
 
 
 
-# TODO: DONT FORGET COLORS
 
 # --------------------------------------------------------------------------------
 
