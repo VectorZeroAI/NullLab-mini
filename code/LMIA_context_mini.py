@@ -29,28 +29,36 @@ class LMIA_context_mini:
         """
         Ai = 0
         User = 1
-
-    def __init__(self, DB_path: str, interactive: bool):
+    
+    def __init__(self, DB_path: str, interactive: bool, logs: bool):
         """
     Instanse constructor. 
     I will use it as one.
     All the instanse creation logic is consentrated here. 
         """
-    
+        def log_print(text: str):
+            """
+            Prints if logs is true
+            """
+            if logs:
+                print(text)
+            else:
+                return
+                    
         DB_file = Path(DB_path)
 
         self.interactive = interactive
+        self.logs = logs
 
         if DB_file.is_file():
             try:
                 self.conn = sqlite3.connect(DB_file)
                 self.curr = self.conn.cursor()
             except sqlite3.Error as e:
-                print(f"file found under {DB_path} , but unable to connect to. {e}")
+                log_print(text=f"file found under {DB_path} , but unable to connect to. {e}")
                 if self.interactive:
-                    action = None
                     action = input("delete it and reinitialise? Yes means delete and reinitialise the DB, No means aborting execution.")
-                    action = action.lower()
+                    action = action.lower().strip()
                     if action == "yes" or action == "y":
                         DB_file.unlink() # This means delete
                         DB_file.touch()
@@ -91,7 +99,7 @@ class LMIA_context_mini:
             else:
                 raise RuntimeError("The given path is not a connectable file. ")
         
-        print("Connection sucsessfullly established.")
+        log_print("Connection sucsessfullly established.")
 
         self.curr.execute("""CREATE TABLE IF NOT EXISTS memory(
               UUID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -105,13 +113,13 @@ class LMIA_context_mini:
 
         self.conn.commit()
 
-        print("Assumed the table is there")
+        log_print("Assumed the table is there")
         
-        print("initialising sentense transformer")
+        log_print("initialising sentense transformer")
 
         self.embedder = SentenceTransformer("all-MiniLM-L6-v2")
 
-        print("[green]construction of the class completed with.[/green]")
+        log_print("[green]construction of the class completed with.[/green]")
 
     def input_context(self, prompt: str, origin: int | IntEnum):
         """
@@ -120,13 +128,22 @@ class LMIA_context_mini:
     origin is an enum of Origin class objekt. 
     asign via .origin.ai/user
         """
-        print(f"prompt {prompt} recived")
+        def log_print(text: str):
+            """
+            Prints if logs is true
+            """
+            if self.logs:
+                print(text)
+            else:
+                return
+
+        log_print(f"prompt {prompt} recived")
         if isinstance(origin, IntEnum):
             origin = int(origin)
         elif isinstance(origin, int):
             pass
 
-        print("perofrming SQL operations")
+        log_print("perofrming SQL operations")
 
         if origin == 1: 
             self.curr.execute("INSERT INTO memory (user_prompt) VALUES (?)", (prompt,))
@@ -141,7 +158,7 @@ class LMIA_context_mini:
                 WHERE UUID = (SELECT UUID FROM memory WHERE embedded_user_prompt IS NULL ORDER BY UUID DESC LIMIT 1)
                 """, (self.embedded_prompt,))
             # COMMIT IS DONE OUTSIDE THE IF STATEMENT
-            print("successfully prepared embedding and user prompt into the corresponding places inside the SQLite DB")
+            log_print("successfully prepared embedding and user prompt into the corresponding places inside the SQLite DB")
         elif origin == 0:
             self.curr.execute(""" 
                 UPDATE memory
@@ -160,19 +177,27 @@ class LMIA_context_mini:
                 WHERE UUID = (SELECT UUID FROM memory WHERE embedded_ai_response IS NULL ORDER BY UUID DESC LIMIT 1)
                 """, (self.embedded_prompt,))
                     
-            print("sucsessfully prepared embedding and ai response into the corresponding places inside the SQLite DB")
+            log_print("sucsessfully prepared embedding and ai response into the corresponding places inside the SQLite DB")
         else:
             raise RuntimeError(f"INVALID origin. Expected values are 1 or 0, got value {origin}")
             
         self.conn.commit()
             
-        print("sucsessfully inputed the data.")
+        log_print("sucsessfully inputed the data.")
 
-    def get_context(self, prompt):
+    def get_context(self, prompt) -> str:
         """
     THe method to retrieve context from the memory. 
     prompt is the user prompt that would be used to querrie the database. 
         """
+        def log_print(text: str):
+            """
+            Prints if logs is true
+            """
+            if self.logs:
+                print(text)
+            else:
+                return
         # First, check if there are enough messenges to work with. Min = 5
         fetch_variable = self.curr.execute("""
             SELECT UUID FROM memory ORDER BY UUID DESC LIMIT 1
@@ -235,7 +260,7 @@ class LMIA_context_mini:
         Now, we have gotten 2 most similar user prompts, with their row numbers. 
         Now we can proseed to getting the ai_responses for the similar user prompts. 
         """
-        print("first branch is over. Beginning second branch")
+        log_print("first branch is over. Beginning second branch")
         """
         This is the beggining of the second branch. 
         """
@@ -311,7 +336,7 @@ class LMIA_context_mini:
         """
         Branch 2 over.
         """
-        print("branch 2 over.")
+        log_print("branch 2 over.")
         """
         Out of branch 1: last 5 messegnes by TIMESTAMP
         """
@@ -327,22 +352,40 @@ class LMIA_context_mini:
     Deletes everything from the DB. 
     Direct use is not recommended, usage of the clear_memory method is recommeneded
         """
+        def log_print(text: str):
+            """
+            Prints if logs is true
+            """
+            if self.logs:
+                print(text)
+            else:
+                return
+
         try:
             self.curr.execute("""
             DELETE * FROM memory
             """)
             self.conn.commit()
         except RuntimeError as e:
-            print(f"The following error occured: {e}")
-            print("[red] DELETION FAILED [/red]")
+            log_print(f"The following error occured: {e}")
+            log_print("[red] DELETION FAILED [/red]")
             raise RuntimeWarning("DELETION FAILED") from e
 
 
-    def clear_memory(self):
+    def clear_memory(self) -> bool:
         """
     Method for clearing the memory DB. Clears the Database. Doesnt clear the variables. 
     Traling variables may still be there. To remove them, restart the programm. 
         """
+        def log_print(text: str):
+            """
+            Prints if logs is true
+            """
+            if self.logs:
+                print(text)
+            else:
+                return
+
         if self.interactive:
             print("[red] Are you sure you want to errase the memory ? [/red]")
             print("[red][bold] ITS IRREVERSABLE [/bold][/red]")
@@ -352,7 +395,7 @@ class LMIA_context_mini:
             else:
                 print("aborting deletion")
         else:
-            print("initiating deletion without requiring confirmation due to non interactivity of the execution enviroment. ")
+            log_print("initiating deletion without requiring confirmation due to non interactivity of the execution enviroment. ")
             self.__db_deletion_funk__()
         return True
             
