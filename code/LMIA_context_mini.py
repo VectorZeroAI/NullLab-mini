@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 LMIA context plugin, mini edition
-Version 0.1
+Version 0.2
 """
 from enum import IntEnum
 from pathlib import Path
@@ -11,39 +11,32 @@ import numpy as np
 import heapq
 from rich import print
 
-print("imports finished with no errors. Else you wouldnt see this ! ")
+print("imports finished with no errors. ")
 
 
 class LMIA_context_mini:
-    class Origin(IntEnum):
-        AI = 0
-        User = 1
-
     """
     The main plugin class.
+    required input values for instanse creation : DB_path: str , interactive: bool
 
     DB_path is the path to the DB file.
     interactive is bool telling wether the enviroment of execution is interactive or not. 
     Setting to true may allow for interactive error handling, while setting to False removes those. 
     """
-    def __init__(self, DB_path, interactive):
+    class Origin(IntEnum):
+        """
+        Enum for the input context function, as to not need to remember magic numbers 1 and 0.
+        """
+        Ai = 0
+        User = 1
+
+    def __init__(self, DB_path: str, interactive: bool):
         """
     Instanse constructor. 
     I will use it as one.
     All the instanse creation logic is consentrated here. 
         """
-        if DB_path is None:
-            if interactive:
-                print("[red] DB_path is None. [/red]")
-                print("default to ./DB.db filepath ? ")
-                if input("Y/N : ").strip().lower() in ("y", "yes"):
-                    DB_path = "./DB.db"
-                else:
-                    print("aborting")
-                    raise RuntimeError("DB_path is None. DB_path is required.")
-            else:
-                raise RuntimeError("DB_path not given.")
-
+    
         DB_file = Path(DB_path)
 
         self.interactive = interactive
@@ -54,7 +47,7 @@ class LMIA_context_mini:
                 self.curr = self.conn.cursor()
             except sqlite3.Error as e:
                 print(f"file found under {DB_path} , but unable to connect to. {e}")
-                if interactive:
+                if self.interactive:
                     action = None
                     action = input("delete it and reinitialise? Yes means delete and reinitialise the DB, No means aborting execution.")
                     action = action.lower()
@@ -72,7 +65,7 @@ class LMIA_context_mini:
                     raise RuntimeWarning(f"Unable to connect to data base file under given path. given path {DB_path}")
 
         elif DB_file.exists() and not DB_file.is_file():
-            if interactive:
+            if self.interactive:
                 print(f"Something under the supplied path was found, but its not a file. Given path = {DB_path} What to do?")
                 print("1 = delete whatever there is and create the DB file. ")
                 print("0 = abort the execution")
@@ -120,7 +113,7 @@ class LMIA_context_mini:
 
         print("[green]construction of the class completed with.[/green]")
 
-    def input_context(self, prompt, origin):
+    def input_context(self, prompt: str, origin: int | IntEnum):
         """
     The method to input content into the memory. 
     prompt is the content to input. 
@@ -132,17 +125,6 @@ class LMIA_context_mini:
             origin = int(origin)
         elif isinstance(origin, int):
             pass
-        else:
-            if self.interactive:
-                print("[red] invalid origin type. [/red] Are you sure the input is correct, and can be compare to int via == ? ")
-                if input("Y/N : ").strip().lower() in ("yes", "y"):
-                    pass
-                else:
-                    raise TypeError("invalid type.")
-            else:
-                raise TypeError(f"invalid type. Expected IntEnum or int, got {type(origin)}")
-
-        print("origin of type {}")
 
         print("perofrming SQL operations")
 
@@ -177,13 +159,13 @@ class LMIA_context_mini:
                 SET embedded_ai_response = ?
                 WHERE UUID = (SELECT UUID FROM memory WHERE embedded_ai_response IS NULL ORDER BY UUID DESC LIMIT 1)
                 """, (self.embedded_prompt,))
- 
+                    
             print("sucsessfully prepared embedding and ai response into the corresponding places inside the SQLite DB")
         else:
             raise RuntimeError(f"INVALID origin. Expected values are 1 or 0, got value {origin}")
-        
+            
         self.conn.commit()
-        
+            
         print("sucsessfully inputed the data.")
 
     def get_context(self, prompt):
