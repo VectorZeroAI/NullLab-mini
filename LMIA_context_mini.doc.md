@@ -5,7 +5,18 @@ This is an LMIA context, version mini, doc.
 ## PLAN:
 
 The plugin provides LMIA_context_mini class.
-The usage is as following:
+The usage of the class is as following:
+
+### Instanse creation: 
+
+Each instanse requires defining 3 parameters for it to work with. 
+1. DB_path , wich is a string defining the DB path. Defaults to ./DB.db if not specified.
+2. interactive, wich is a bool, defining wether interactive behaviour is allowed or not. (e.g. interactive error handling)
+3. logs , wich is a bool, defining wether log like print statements are to be outputed or not. 
+
+Both 2 and 3 default to False. 
+
+The instanse doesnt need anything specified, but this is the amount of parameters it offeres. 
 
 ### input funktion
 All the input prompts get inputed into a DB. 
@@ -20,6 +31,10 @@ Output funktion is called get_context("prompt"), and provides relevant context t
 
 The sorting and finding logic also is located inside that funktion, so dont expect the response to be instant. 
 So it may not work correcly with async. 
+
+### clear memory function
+
+The clear memory function is called clear_memory() , and it just cleares the DB, and catches errors. 
 
 # Architecture
 

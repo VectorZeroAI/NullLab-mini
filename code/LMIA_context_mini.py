@@ -30,12 +30,13 @@ class LMIA_context_mini:
         Ai = 0
         User = 1
     
-    def __init__(self, DB_path: str, interactive: bool, logs: bool):
+    def __init__(self, DB_path: str | None, interactive: bool | None, logs: bool | None):
         """
     Instanse constructor. 
     I will use it as one.
     All the instanse creation logic is consentrated here. 
         """
+        # Helper function
         def log_print(text: str):
             """
             Prints if logs is true
@@ -44,6 +45,13 @@ class LMIA_context_mini:
                 print(text)
             else:
                 return
+        # Default values.
+        if DB_path is None:
+            DB_path = "./DB.db"
+        if interactive is None:
+            interactive = False
+        if logs is None:
+            logs = False
                     
         DB_file = Path(DB_path)
 
