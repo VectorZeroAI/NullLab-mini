@@ -14,7 +14,7 @@ from langchain_core.messages import ToolMessage
 from langchain_core.prompts import ChatPromptTemplate
 # from langchain_community.agent_toolkits.json.base import create_json_agent
 
-print("[green]Everything else initialised[/green]")
+print("[green]import sequense completed [/green]")
 
 """
 NullLab-mini subfile. 
@@ -33,6 +33,24 @@ Architecture:
             2. blueprint validation
             3. Plan creation
             4. Plan validation
+"""
+# USAGE INFO DECLARAtION:
+HELP_INFO = """
+Welcome to NullLab-mini Usage guide ! 
+The creation of software is split into 4 stages, in this state, then come 2 more steps. 
+So 6 steps total from this moment onwards.
+
+step 1 : creation of blueprint for your software. 
+step 2 : double checking if blueprint is correct.
+step 3 : creating implementation plan for your software. 
+step 4 : double checking if its correct. 
+
+Here are the abailable commands. 
+Anything other then command will be forwarded to AI as a prompt.
+1. : " COMMAND:go_next_stage " . This moves you on to the next step of creating your software. 
+2. : " exit " will exit you out of the programm
+3. : " COMMAND:go_prev_stage " will move you to the previous stage. NOTE: only available in stages 2 and 4. It may be used in stage 3, but its not recommended. 
+4. : " COMMAND:see_stage " will print your current stage. 
 """
 # -------------- function declaration / creation --------------------------------------------
 """
@@ -193,24 +211,42 @@ system_prompt = None
 # Fun messange
 print("[bold][italic][red]Hello, human. Welcome to NullLab-mini chat[/red][/italic][/bold]")
 
-# Main loop
+# ---------- Main loop ---------------------------------------------------------------------
 while stage in (1, 2, 3, 4):
-    # This is the user input handling
-    user_input = input("You: ").strip()
-    if user_input.lower() in ("exit", "quit"):
+    # ---------- user input handling ----------
+    user_input = input("You: ").strip().lower()
+    if user_input in ("exit", "quit"):
         prev_stage = stage
         error_action = "exit"
-    elif user_input.lower == "COMMAND:go_next_stage":
+    elif user_input == "COMMAND:go_next_stage":
         passed = validate_json_file(stage)
         if passed:
             stage =+ 1
             _flag_first_time = True
         else:
             print("[red] shema verification failed [/red]")
+            print(" Are you sure you want to prossed ? ")
+            if input(" Yes/no : ").lower().strip() in ("yes", "y", ""):
+                stage =+ 1
+                _flag_first_time = True
+            else:
+                print(" Aborting stage switch ")
+    elif user_input == "COMMAND:go_prev_stage".lower():
+        if stage in (2, 3, 4):
+            stage =- 1
+        else:
+            print("Not allowed right now. ")
+    elif user_input == "COMMAND:see_stage".lower():
+        print(f"stage: {stage}")
+
+    elif user_input in ("help", "?", "h"):
+        print(HELP_INFO)
 
     mem.input_context(user_input, 1) # NOTE: 0 == ai , 1 == user
                                      # NOTE: There is also an enum implemented for that. its called Origin
-    # This is the response handling
+    # ---------------------------------------------------------------------------------------
+    # ------- response handling ------------------------------------------------------------
+    # ---------------------------------------------------------------------------------------
     if stage == 1:
         if _flag_first_time:
             system_prompt = config.global_ai_instructions_for_stage_1_and_3
