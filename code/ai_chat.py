@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
+"""
+NullLab-mini subfile. 
+ai_chat module for state1 of main.py
+"""
+
 from rich import print
 from pydantic import SecretStr, ValidationError
 import sys
 import LMIA_context_mini
-import config
+from config import Config, Manuals
 import json
 from pathlib import Path
 from jsonschema import validate
@@ -15,12 +20,6 @@ from langchain_core.prompts import ChatPromptTemplate
 # from langchain_community.agent_toolkits.json.base import create_json_agent
 
 print("[green]import sequense completed [/green]")
-
-"""
-NullLab-mini subfile. 
-ai_chat module for state1 of main.py
-"""
-
 
 """
 Architecture: 
@@ -35,23 +34,7 @@ Architecture:
             4. Plan validation
 """
 # USAGE INFO DECLARAtION:
-HELP_INFO = """
-Welcome to NullLab-mini Usage guide ! 
-The creation of software is split into 4 stages, in this state, then come 2 more steps. 
-So 6 steps total from this moment onwards.
-
-step 1 : creation of blueprint for your software. 
-step 2 : double checking if blueprint is correct.
-step 3 : creating implementation plan for your software. 
-step 4 : double checking if its correct. 
-
-Here are the abailable commands. 
-Anything other then command will be forwarded to AI as a prompt.
-1. : " COMMAND:go_next_stage " . This moves you on to the next step of creating your software. 
-2. : " exit " will exit you out of the programm
-3. : " COMMAND:go_prev_stage " will move you to the previous stage. NOTE: only available in stages 2 and 4. It may be used in stage 3, but its not recommended. 
-4. : " COMMAND:see_stage " will print your current stage. 
-"""
+HELP_INFO = Manuals.ai_chat_manual
 # -------------- function declaration / creation --------------------------------------------
 """
 In this section all functions declarations are performed
@@ -60,7 +43,7 @@ In this section all functions declarations are performed
 def agent_turn(user_input_for_turn, system_prompt_for_the_turn, memory):
     messange = prompt.invoke({"input": user_input_for_turn, "system_prompt": system_prompt_for_the_turn, "memory": memory}).to_messages()
 
-    for _ in range(config.max_tool_runs):
+    for _ in range(Config.max_tool_runs):
         ai_message = llm.invoke(messange)
         messange.append(ai_message)
 
@@ -73,7 +56,7 @@ def agent_turn(user_input_for_turn, system_prompt_for_the_turn, memory):
 
             messange.append(ToolMessage(content=str(result), tool_call_id=call["id"]))
             
-    raise RuntimeError("AI tried doing to many tool calls. If you think it did everything correctly, increase the max_tool_runs config parameter. Else do nothing and just retry.")
+    raise RuntimeError("AI tried doing to many tool calls. If you think it did everything correctly, increase the max_tool_runs Config.parameter. Else do nothing and just retry.")
 # --------------- json validation function ------------------
 def validate_json_file(stage_for_this_func: int | None = None) -> bool:
     """
@@ -170,9 +153,9 @@ tools_by_name = {tool.name: tool for tool in tools}
 
 # creation of the llm, e.g. client:
 llm = ChatOpenAI(
-    model=config.model, 
+    model=Config.model, 
     base_url="https://openrouter.ai/api/v1", 
-    api_key=SecretStr(config.api_key)
+    api_key=SecretStr(Config.api_key)
     )
 
 # Bind the tools to the client
@@ -249,7 +232,7 @@ while stage in (1, 2, 3, 4):
     # ---------------------------------------------------------------------------------------
     if stage == 1:
         if _flag_first_time:
-            system_prompt = config.global_ai_instructions_for_stage_1_and_3
+            system_prompt = Config.global_ai_instructions_for_stage_1_and_3
             
             system_prompt = system_prompt + """
             Your goal is, to collaboratively with the user, create the Blueprint.json . 
@@ -329,7 +312,7 @@ while stage in (1, 2, 3, 4):
             else:
                 print("keeping the memory.")
                 _flag_first_time = False    # NOTE: DONT FORGET. 
-            system_prompt = config.global_ai_instructions
+            system_prompt = Config.global_ai_instructions
             system_prompt = system_prompt + """
             Your task is to check if the existing blueprint.json is describing the programm user wants. 
             Question the user about how he wishes the programm to be, and bring up any mismatches with what blueprint.json specifies. 
@@ -347,7 +330,7 @@ while stage in (1, 2, 3, 4):
 
     elif stage == 3:
         if _flag_first_time:
-            system_prompt = config.global_ai_instructions_for_stage_1_and_3 + """
+            system_prompt = Config.global_ai_instructions_for_stage_1_and_3 + """
         Your task is to collaboratively with the user create plan.json , wich must be the specification on how
         to implement blueprint.json. 
         Blueprint.json is complete right now, you must not redact it. 
