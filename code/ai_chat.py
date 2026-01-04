@@ -34,94 +34,29 @@ Architecture:
             3. Plan creation
             4. Plan validation
 """
+# -------------- function declaration / creation --------------------------------------------
+"""
+In this section all functions declarations are performed
+"""
+# ---------- agent turn function --------------
+def agent_turn(user_input_for_turn, system_prompt_for_the_turn, memory):
+    messange = prompt.invoke({"input": user_input_for_turn, "system_prompt": system_prompt_for_the_turn, "memory": memory}).to_messages()
 
-def save() -> bool:
-    """
-    Saves data specified inside this functions body. 
-    Currently only saves stage. 
-    Cannot possibly save chatbot memories, they are saved by the plugin. 
-    """
-    data_to_save = {
-        "stage": stage
-    }
-    try:
-        with open("./dump.json", "w") as f:
-            json.dump(data_to_save, f, indent=4)
-    except RuntimeError as e:
-        print(f"following error occured during save: {e}")
-        return False
-    return True
+    for _ in range(config.max_tool_runs):
+        ai_message = llm.invoke(messange)
+        messange.append(ai_message)
 
-# Json loading
-try:
-    global data_blueprint
-    data_blueprint = json.load(open("blueprint.json"))
-except Exception as e:
-    print("[red] ERROR: DIDNT FIND blueprint.json file. [/red]")
-    print(f"For debug purpuses: Error is: {e}")
-    print("[red]creating an empty blueprint.json file.[/red]")
-    Bluep = Path("./blueprint.json")
-    Bluep.touch()
-    Bluep.write_text("{}")
-    data_blueprint = json.load(open("blueprint.json"))
+        if not ai_message.tool_calls:
+            return ai_message.content
+        
+        for call in ai_message.tool_calls:
+            tool = tools_by_name[call["name"]]
+            result = tool.invoke(call["args"])
 
-try:
-    global data_plan
-    data_plan = json.load(open("plan.json"))
-except Exception as e:
-    print("[red] ERROR: DIDNT FIND plan.json file. [/red]")
-    print(f"For debug purpuses: Error is: {e}")
-    print("[red]creating an empty plan.json file.[/red]")
-    pla = Path("./plan.json")
-    pla.touch()
-    pla.write_text("{}")
-    data_plan = json.load(open("plan.json"))
-
-# Creation of tools for blueprint.json
-spec_blueprint = JsonSpec(dict_=data_blueprint)
-toolkit_blueprint = JsonToolkit(spec=spec_blueprint)
-tools_blueprint = toolkit_blueprint.get_tools()
-
-# Creation of tools for plan.json
-spec_plan = JsonSpec(dict_=data_plan)
-toolkit_plan = JsonToolkit(spec=spec_plan)
-tools_plan = toolkit_plan.get_tools()
-
-# Merge tools
-tools = tools_blueprint + tools_plan
-
-tools_by_name = {tool.name: tool for tool in tools}
-
-# creation of the llm, e.g. client:
-llm = ChatOpenAI(
-    model=config.model, 
-    base_url="https://openrouter.ai/api/v1", 
-    api_key=SecretStr(config.api_key)
-    )
-
-# Bind the tools to the client
-llm = llm.bind_tools(tools)
-
-prompt = ChatPromptTemplate.from_messages([
-        ("system", "{system_prompt},"),
-        ("system", "Relevant memory: {memory}"),
-        ("human", "{input}")
-    ])
-
-mem = LMIA_context_mini.LMIA_context_mini("./DB.db", INTERACTIVE=True) # Memory initialisation
-
-dump_file = Path("./dump.json")
-if dump_file.is_file():
-    with open("./dump.json", "rw") as f:
-        save_file_json = json.load(f)
-        stage = save_file_json["stage"]
-else:
-    print("No save file was found. Starting a new conversation.")
-    stage = 1
-    mem.clear_memory()
-
-print("[bold][italic][red]Hello, human. Welcome to NullLab-mini chat[/red][/italic][/bold]")
-
+            messange.append(ToolMessage(content=str(result), tool_call_id=call["id"]))
+            
+    raise RuntimeError("AI tried doing to many tool calls. If you think it did everything correctly, increase the max_tool_runs config parameter. Else do nothing and just retry.")
+# --------------- json validation function ------------------
 def validate_json_file(stage_for_this_func: int | None = None) -> bool:
     """
     function to test the work of ai with. 
@@ -156,28 +91,107 @@ def validate_json_file(stage_for_this_func: int | None = None) -> bool:
     else:
         raise RuntimeError("Invalid stage")
 
-def agent_turn(user_input_for_turn, system_prompt_for_the_turn, memory):
-    messange = prompt.invoke({"input": user_input_for_turn, "system_prompt": system_prompt_for_the_turn, "memory": memory}).to_messages()
+# --------------- save function ------------------------
+def save() -> bool:
+    """
+    Saves data specified inside this functions body. 
+    Currently only saves stage. 
+    Cannot possibly save chatbot memories, they are saved by the plugin. 
+    """
+    data_to_save = {
+        "stage": stage
+    }
+    try:
+        with open("./dump.json", "w") as f:
+            json.dump(data_to_save, f, indent=4)
+    except RuntimeError as e:
+        print(f"following error occured during save: {e}")
+        return False
+    return True
 
-    for _ in range(config.max_tool_runs):
-        ai_message = llm.invoke(messange)
-        messange.append(ai_message)
+# --------------- json loading --------------------------------------------------------
+# blueprint loading
+try:
+    global data_blueprint
+    data_blueprint = json.load(open("blueprint.json"))
+except Exception as e:
+    print("[red] ERROR: DIDNT FIND blueprint.json file. [/red]")
+    print(f"For debug purpuses: Error is: {e}")
+    print("[red]creating an empty blueprint.json file.[/red]")
+    Bluep = Path("./blueprint.json")
+    Bluep.touch()
+    Bluep.write_text("{}")
+    data_blueprint = json.load(open("blueprint.json"))
+# plan loading
+try:
+    global data_plan
+    data_plan = json.load(open("plan.json"))
+except Exception as e:
+    print("[red] ERROR: DIDNT FIND plan.json file. [/red]")
+    print(f"For debug purpuses: Error is: {e}")
+    print("[red]creating an empty plan.json file.[/red]")
+    pla = Path("./plan.json")
+    pla.touch()
+    pla.write_text("{}")
+    data_plan = json.load(open("plan.json"))
 
-        if not ai_message.tool_calls:
-            return ai_message.content
-        
-        for call in ai_message.tool_calls:
-            tool = tools_by_name[call["name"]]
-            result = tool.invoke(call["args"])
+# ======= AGENT INIT =====================================================================
+# Creation of tools for blueprint.json
+spec_blueprint = JsonSpec(dict_=data_blueprint)
+toolkit_blueprint = JsonToolkit(spec=spec_blueprint)
+tools_blueprint = toolkit_blueprint.get_tools()
 
-            messange.append(ToolMessage(content=str(result), tool_call_id=call["id"]))
-            
-    raise RuntimeError("AI tried doing to many tool calls. If you think it did everything correctly, increase the max_tool_runs config parameter. Else do nothing and just retry.")
+# Creation of tools for plan.json
+spec_plan = JsonSpec(dict_=data_plan)
+toolkit_plan = JsonToolkit(spec=spec_plan)
+tools_plan = toolkit_plan.get_tools()
 
+# Merge tools
+tools = tools_blueprint + tools_plan
+tools_by_name = {tool.name: tool for tool in tools}
 
-# Variable mess.
-error_action = None
+# creation of the llm, e.g. client:
+llm = ChatOpenAI(
+    model=config.model, 
+    base_url="https://openrouter.ai/api/v1", 
+    api_key=SecretStr(config.api_key)
+    )
+
+# Bind the tools to the client
+llm = llm.bind_tools(tools)
+# Creation of the prompt template
+prompt = ChatPromptTemplate.from_messages([
+        ("system", "{system_prompt},"),
+        ("system", "Relevant memory: {memory}"),
+        ("human", "{input}")
+    ])
+
+# ------- Memory initialisation ------------------------------------------------
+
+mem = LMIA_context_mini.LMIA_context_mini("./DB.db", INTERACTIVE=True) 
+
+# ---------------- SAVE LOADING -----------------------------------------------------------
+
+dump_file = Path("./dump.json")
+if dump_file.is_file():
+    with open("./dump.json", "rw") as f:
+        save_file_json = json.load(f)
+        stage = save_file_json["stage"]
+else:
+    print("No save file was found. Starting a new conversation.")
+    stage = 1
+    mem.clear_memory()
+
+# ----------- First time flag declaration -------------------------------------------------
+
 _flag_first_time = True
+
+# Variable decaration
+error_action = None
+system_prompt = None
+
+# Fun messange
+print("[bold][italic][red]Hello, human. Welcome to NullLab-mini chat[/red][/italic][/bold]")
 
 # Main loop
 while stage in (1, 2, 3, 4):
@@ -195,7 +209,7 @@ while stage in (1, 2, 3, 4):
             print("[red] shema verification failed [/red]")
 
     mem.input_context(user_input, 1) # NOTE: 0 == ai , 1 == user
-                                     # NOTE: There is also an enum implemented for that. its called 
+                                     # NOTE: There is also an enum implemented for that. its called Origin
     # This is the response handling
     if stage == 1:
         if _flag_first_time:
@@ -256,7 +270,6 @@ while stage in (1, 2, 3, 4):
         else:
             pass
             # Note: Moving to normal execution. 
-        
         relevant_memory = mem.get_context(user_input)
         response = agent_turn(user_input_for_turn=user_input, system_prompt_for_the_turn=system_prompt, memory=relevant_memory)
         mem.input_context(str(response), 0)
