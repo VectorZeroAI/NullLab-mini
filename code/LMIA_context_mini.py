@@ -30,7 +30,7 @@ class LMIA_context_mini:
         Ai = 0
         User = 1
     
-    def __init__(self, DB_path: str | None, interactive: bool | None, logs: bool | None):
+    def __init__(self, DB_path: str | None = None, interactive: bool | None = None, logs: bool | None = None):
         """
     Instanse constructor. 
     I will use it as one.
