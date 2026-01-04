@@ -390,6 +390,8 @@ while stage in (1, 2, 3, 4):
                 print("[yellow]are you sure you dont want to save?[/yellow]")
                 if input(": ").strip().lower() in ("yes", "y", ""):
                     print("Not saving")
+                    sys.exit()
                 else:
                     print("saving")
                     save()
+                    sys.exit()
