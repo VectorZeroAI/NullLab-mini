@@ -89,7 +89,7 @@ def validate_json_file(stage_for_this_func: int | None = None) -> bool:
     elif stage_for_this_func == 4:
         return True
     else:
-        raise RuntimeError("Invalid stage")
+        raise RuntimeError("invalid stage")
 
 # --------------- save function ------------------------
 def save() -> bool:
@@ -270,6 +270,8 @@ while stage in (1, 2, 3, 4):
         else:
             pass
             # Note: Moving to normal execution. 
+        if system_prompt is None:
+            raise RuntimeWarning("System prompt was not set correctly ! ")
         relevant_memory = mem.get_context(user_input)
         response = agent_turn(user_input_for_turn=user_input, system_prompt_for_the_turn=system_prompt, memory=relevant_memory)
         mem.input_context(str(response), 0)
@@ -299,17 +301,44 @@ while stage in (1, 2, 3, 4):
         else:
             pass
 
+        if system_prompt is None:
+            raise RuntimeWarning("System prompt was not set correctly ! ")
         relevant_memory = mem.get_context(user_input)
         response = agent_turn(user_input_for_turn=user_input, system_prompt_for_the_turn=system_prompt, memory=relevant_memory)
         mem.input_context(str(response), 0)
         print("[green]AI answers: [/green]")
         print(f"{response}")
 
-
-
-
     elif stage == 3:
-        pass
+        if _flag_first_time:
+            system_prompt = config.global_ai_instructions_for_stage_1_and_3 + """
+        Your task is to collaboratively with the user create plan.json , wich must be the specification on how
+        to implement blueprint.json. 
+        Blueprint.json is complete right now, you must not redact it. 
+        Here is a plan.json example:
+
+        {
+        "plan": [
+            {
+                "module_name": "module name here",
+                "instruction": "detailed instruction on how to write the module",
+                "note": "note here, optionaly"
+            }
+          ]
+        }
+        """
+            _flag_first_time = False
+        else:
+            pass
+        
+        if system_prompt is None:
+            raise RuntimeWarning("System prompt was not set correctly ! ")
+        relevant_memory = mem.get_context(user_input)
+        response = agent_turn(user_input_for_turn=user_input, system_prompt_for_the_turn=system_prompt, memory=relevant_memory)
+        mem.input_context(str(response), 0)
+        print("[green]AI answers: [/green]")
+        print(f"{response}")
+
     elif stage == 4:
         pass
 
