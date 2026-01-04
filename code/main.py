@@ -1,4 +1,4 @@
-# This is my main file. 
+#!/usr/env/python3
 """
 main.py of NullLab-mini projekt.
 This is my Structured auto coder projekt. 
@@ -25,41 +25,17 @@ This is the first time I actually write code myself, so I hope you can all be ..
 I try to document as much as I can, since this makes the code fat better. 
 """
 
-# ----------------------------------------------------------------------------------------------------------------
-
-"""
-This is pre state globals, and some basics. 
-mygo is the library I use for the goto funktion, since I may need it, I keep it here. 
-I will delete it the moment I make sure I dont need it here.
-Every goto use case will be clearly documented, in order to not cause spagetti code. 
-UPDATE: mygo didnt work, so I removed the line.
-I will use it the moment I have to deal with confusing loop heuristics again!!!!
-"""
-
-# from mygo import enable_goto, label, goto
-
-
-# Lets get this fun little thingy.
-
-base_dir = None
-state = 0
-
-projekt_parts = ["plan.json", "blueprint.json", "metadata.json", "config.py", "bugs.json", "projekt.db", "memory.json", "memory.db"]
-
-
-# ----------------------------------------------------------------------------------------------------
-"""
-Early init state
-Dependancy loading
-"""
-
-
-print("initialising NullLab-mini")
-print("import sequense beginns now.")
-
 from pathlib import Path
 import subprocess
 from rich import print
+
+print("initialising NullLab-mini")
+
+base_dir: object | None = None
+state: int = 0
+
+projekt_parts: list[str] = ["plan.json", "blueprint.json", "metadata.json", "config.py", "bugs.json", "projekt.db", "memory.json", "memory.db"]
+
 
 """
 The import should be in try expect with proper handling of missing imports, but it didnt work for some reason, so I just cut it out. 
@@ -68,16 +44,14 @@ The import should be in try expect with proper handling of missing imports, but 
 print("[green]early initialisation complete.[/green]")
 
 
-"""
 
-State0, the init state. 
-This state loads all the actual dependancies, as well as interactivly initialises the programm. 
+def state0() -> bool | None:   
+    """
+    State0, the init state. 
+    This state loads all the actual dependancies, as well as interactivly initialises the programm. 
 
-TODO: FUTURE: add a configuration option that loads you into a projekt instantly. 
-
-"""
-
-def state0():   
+    TODO: FUTURE: add a configuration option that loads you into a projekt instantly. 
+    """
     while True:
         
         #!!! Now comes the projekt init
@@ -90,7 +64,7 @@ def state0():
             
             global base_dir 
             
-            input_dir = input("input path to work directory.")     
+            input_dir: str = input("input path to work directory.")     
             print(f"initialising at {input_dir}")
             base_dir = Path(input_dir)
             
@@ -102,8 +76,8 @@ def state0():
                 continue
                                                
 
-            print(f"NullLab-mini will now assume full controll over dir {input_dir}.")
-            if input("Confirmation. Yes or No").lower() in ("yes", "y"):
+            print(f"NullLab-mini will now assume [red]full controll[/red] over dir {input_dir}.")
+            if input("Confirmation. Yes / No").lower().strip() in ("yes", "y"):
                 print("[green]confirmation recieved. Proceesing[/green]")
                 break
             else:
@@ -112,9 +86,10 @@ def state0():
 
         while True:
             
-            global flag_file_not_found
             global projekt_parts
             # Yes, I slapped those everywhere, because I dont really get how these work, I will separate by name most of the time anyway. 
+            flag_file_not_found: int | None
+            flag_file_not_found = None
 
             for name in projekt_parts:
                 file_path = base_dir / name
@@ -130,8 +105,9 @@ def state0():
             
             # if True, break, if false, pass.
             if flag_file_not_found is not None:
+                flag_retry = False
                 print(f"[red]Projekt not found on {dir}[/red]")
-                if input("initialise an empty projekt?").lower in ("y", "yes"):
+                if input("initialise an empty projekt? Y/n").lower().strip() in ("y", "yes", ""):
                     
                     for file in projekt_parts:
                         file_path = base_dir / file
@@ -143,11 +119,11 @@ def state0():
                     
                     break # This one breaks the loop 2.
                 else:
-                    global flag_retry   # I hate flags. 
-                    flag_retry = 1
+                    flag_retry = True
+                    flag_retry: bool | None # I hate flags. 
                     break
-        if flag_retry == 1:         # Like, why the fuck do I need to do this? Why doesnt python support loop labels?
-            flag_retry = 0          # I will switch to rust after this. I hate this!!!!
+        if flag_retry:         # Like, why the fuck do I need to do this? Why doesnt python support loop labels?
+            flag_retry = False          # I will switch to rust after this. I hate this!!!!
             continue
         else:
             break # This one breaks loop 1.
@@ -169,24 +145,24 @@ This is my way to handle errors, wich is just a clean error messenge / s .
 
 # ----------------------------------------------------------------------------------------------------------------
 
-"""
-State 1, the planning state. 
-
-This is the state where AI and the user collaborate on planning the projekt through. 
-The projekt blueprint is saved under "blueprint.json".
-The projekt implementation plan is saved under "plan.json".
-I will at some point make a json shema.
-
-The main problem is: How will the user see the files, and how to make the collaboration work? 
-... This needs more consideration. 
-
-Done for today!!!
-"""
 
 def state1():
+    """
+    State 1, the planning state. 
+
+    This is the state where AI and the user collaborate on planning the projekt through. 
+    The projekt blueprint is saved under "blueprint.json".
+    The projekt implementation plan is saved under "plan.json".
+    I will at some point make a json shema.
+
+    The main problem is: How will the user see the files, and how to make the collaboration work? 
+    ... This needs more consideration. 
+
+    Done for today!!!
+    """
     while True:
         print("initialising tmux session")
-        tmux_session_name = "NullLab_mini_session"
+        tmux_session_name: str = "NullLab_mini_session"
         print(f"tmux session name : {tmux_session_name}")
         subprocess.run([
             "tmux", "new-session", "-d", "-s", f"{tmux_session_name}", "-n", "main"
@@ -195,8 +171,6 @@ def state1():
         subprocess.run([
             "tmux", "split-window", "-v", "-t", f"{tmux_session_name}:main"
             ])
-        # NOTE: We will only be showing one of the files at a time. So, no need for the second split
-        # NOTE: Since only one of those is modified at a time. 
         subprocess.run([
             "tmux", "send-keys",
             "-t", f"{tmux_session_name}:main.0",
@@ -208,26 +182,26 @@ def state1():
         global state
         while state == 1:
             pass
-            # TODO: FINISH THIS BLOCK. 
-            # this block must check for changes in files blueprint.json and plan.json, 
-            # via watchdog
-            # and update the view in the second half of the screen. 
-            # ...
-            # As well as monitor for changes in "signal.json" file. 
-            # Once changes detected, look into the value in there. 
-            # And the value in there is the signal. 
-            # This will be used by the ai_chat.py to signal that the view must be changed. 
-
-
+        #TODO: FINISH THIS BLOCK. 
+            """
+        this block must check for changes in files blueprint.json and plan.json, 
+        via watchdog
+        and update the view in the second half of the screen. 
+        [UPDATE]
+        After long considerations, I have finaly found a solution. 
+        Use the watchdog library and from rich import print_json .... that is good enough. 
+        For any changes, the user should just open the files in an editor of their choise. 
+            """
+        #TODO: Create variables for the user to not need to know the path to the files. 
 
 
 # --------------------------------------------------------------------------------
 
-"""
-This is state 2, the implementation state. It will just be a for loop of API calls and DataBase saves. 
-"""
 
 def state2():
+    """
+    This is state 2, the implementation state. It will just be a for loop of API calls and file saves. 
+    """
     pass
 
 
@@ -237,12 +211,12 @@ def state2():
 
 # --------------------------------------------------------------------------------
 
-"""
-This is state 3, the debugging state. 
-This is gonna be a set of for loops, with a bunch of json saves. 
-"""
 
 def state3():
+    """
+    This is state 3, the debugging state. 
+    This is gonna be a set of for loops, with a bunch of json saves. 
+    """
     pass
 
 
