@@ -150,7 +150,7 @@ def agent_turn(user_input_for_turn, system_prompt_for_the_turn, memory):
             
     raise RuntimeError("AI tried doing to many tool calls. If you think it did everything correctly, increase the max_tool_runs config parameter. Else do nothing and just retry.")
 stage = 1
-mem = LMIA_context_mini.LMIA_context_mini("./DB.db", interactive=True) # Memory initialisation
+mem = LMIA_context_mini.LMIA_context_mini("./DB.db", INTERACTIVE=True) # Memory initialisation
 
 # Variable mess.
 error_action = None

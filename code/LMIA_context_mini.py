@@ -30,7 +30,7 @@ class LMIA_context_mini:
         Ai = 0
         User = 1
     
-    def __init__(self, DB_path: str | None = None, interactive: bool | None = None, logs: bool | None = None):
+    def __init__(self, DB_PATH: str | None = None, INTERACTIVE: bool | None = None, LOGS: bool | None = None):
         """
     Instanse constructor. 
     I will use it as one.
@@ -41,29 +41,29 @@ class LMIA_context_mini:
             """
             Prints if logs is true
             """
-            if logs:
+            if LOGS:
                 print(text)
             else:
                 return
         # Default values.
-        if DB_path is None:
-            DB_path = "./DB.db"
-        if interactive is None:
-            interactive = False
-        if logs is None:
-            logs = False
+        if DB_PATH is None:
+            DB_PATH = "./DB.db"
+        if INTERACTIVE is None:
+            INTERACTIVE = False
+        if LOGS is None:
+            LOGS = False
                     
-        DB_file = Path(DB_path)
+        DB_file = Path(DB_PATH)
 
-        self.interactive = interactive
-        self.logs = logs
+        self.interactive = INTERACTIVE
+        self.logs = LOGS
 
         if DB_file.is_file():
             try:
                 self.conn = sqlite3.connect(DB_file)
                 self.curr = self.conn.cursor()
             except sqlite3.Error as e:
-                log_print(text=f"file found under {DB_path} , but unable to connect to. {e}")
+                log_print(text=f"file found under {DB_PATH} , but unable to connect to. {e}")
                 if self.interactive:
                     action = input("delete it and reinitialise? Yes means delete and reinitialise the DB, No means aborting execution.")
                     action = action.lower().strip()
@@ -78,11 +78,11 @@ class LMIA_context_mini:
                     else:
                         raise RuntimeError(f"Aborting execution. Invalid action code supplied. Supplied {action}, expected: Yes or No")
                 else:
-                    raise RuntimeWarning(f"Unable to connect to data base file under given path. given path {DB_path}")
+                    raise RuntimeWarning(f"Unable to connect to data base file under given path. given path {DB_PATH}")
 
         elif DB_file.exists() and not DB_file.is_file():
             if self.interactive:
-                print(f"Something under the supplied path was found, but its not a file. Given path = {DB_path} What to do?")
+                print(f"Something under the supplied path was found, but its not a file. Given path = {DB_PATH} What to do?")
                 print("1 = delete whatever there is and create the DB file. ")
                 print("0 = abort the execution")
                 action = input("Enter action code")
@@ -90,7 +90,7 @@ class LMIA_context_mini:
                     try:
                         DB_file.unlink() # This means delete
                         DB_file.touch()  # This means create
-                        self.conn = sqlite3.connect(DB_path)  # This is just connecting
+                        self.conn = sqlite3.connect(DB_PATH)  # This is just connecting
                         self.curr = self.conn.cursor()
 
                     except OSError as e:
