@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from rich import print
-from pydantic import SecretStr
+from pydantic import SecretStr, ValidationError
 import sys
 import LMIA_context_mini
 import config
@@ -35,17 +35,22 @@ Architecture:
             4. Plan validation
 """
 
-
-dump_file = Path("./dump.json")
-if dump_file.is_file():
-    with open("./dump.json", "rw") as f:
-        save_file_json = json.load(f)
-        if save_file_json:
-            raise NotImplementedError()
-
-        # TODO: Finish this
-else:
-    print("No save file was found. Starting a new conversation.")
+def save() -> bool:
+    """
+    Saves data specified inside this functions body. 
+    Currently only saves stage. 
+    Cannot possibly save chatbot memories, they are saved by the plugin. 
+    """
+    data_to_save = {
+        "stage": stage
+    }
+    try:
+        with open("./dump.json", "w") as f:
+            json.dump(data_to_save, f, indent=4)
+    except RuntimeError as e:
+        print(f"following error occured during save: {e}")
+        return False
+    return True
 
 # Json loading
 try:
@@ -55,9 +60,9 @@ except Exception as e:
     print("[red] ERROR: DIDNT FIND blueprint.json file. [/red]")
     print(f"For debug purpuses: Error is: {e}")
     print("[red]creating an empty blueprint.json file.[/red]")
-    bluep = Path("./blueprint.json")
-    bluep.touch()
-    bluep.write_text("{}")
+    Bluep = Path("./blueprint.json")
+    Bluep.touch()
+    Bluep.write_text("{}")
     data_blueprint = json.load(open("blueprint.json"))
 
 try:
@@ -103,11 +108,21 @@ prompt = ChatPromptTemplate.from_messages([
         ("human", "{input}")
     ])
 
+mem = LMIA_context_mini.LMIA_context_mini("./DB.db", INTERACTIVE=True) # Memory initialisation
+
+dump_file = Path("./dump.json")
+if dump_file.is_file():
+    with open("./dump.json", "rw") as f:
+        save_file_json = json.load(f)
+        stage = save_file_json["stage"]
+else:
+    print("No save file was found. Starting a new conversation.")
+    stage = 1
+    mem.clear_memory()
+
 print("[bold][italic][red]Hello, human. Welcome to NullLab-mini chat[/red][/italic][/bold]")
 
-print("defining funktions")
-
-def test(stage_for_this_func):
+def validate_json_file(stage_for_this_func: int | None = None) -> bool:
     """
     function to test the work of ai with. 
     returns True if valid, False if invalid. 
@@ -119,18 +134,27 @@ def test(stage_for_this_func):
     if stage_for_this_func == 1:
         with open("./blueprint.schema.json") as f:
             schema = json.load(f)
-        validation = validate(data_blueprint, schema)
-        return validation
+        try:
+            validate(data_blueprint, schema)
+        except ValidationError:
+            return False
+        else:
+            return True
     elif stage_for_this_func == 2:
         return True
     elif stage_for_this_func == 3:
          with open("./plan.schema.json") as f:
             schema = json.load(f)
-         validation = validate(data_plan, schema)
-         return validation
-       
+         try:
+             validate(data_plan, schema)
+         except ValidationError:
+             return False
+         else:
+             return True
     elif stage_for_this_func == 4:
         return True
+    else:
+        raise RuntimeError("Invalid stage")
 
 def agent_turn(user_input_for_turn, system_prompt_for_the_turn, memory):
     messange = prompt.invoke({"input": user_input_for_turn, "system_prompt": system_prompt_for_the_turn, "memory": memory}).to_messages()
@@ -149,8 +173,7 @@ def agent_turn(user_input_for_turn, system_prompt_for_the_turn, memory):
             messange.append(ToolMessage(content=str(result), tool_call_id=call["id"]))
             
     raise RuntimeError("AI tried doing to many tool calls. If you think it did everything correctly, increase the max_tool_runs config parameter. Else do nothing and just retry.")
-stage = 1
-mem = LMIA_context_mini.LMIA_context_mini("./DB.db", INTERACTIVE=True) # Memory initialisation
+
 
 # Variable mess.
 error_action = None
@@ -164,7 +187,7 @@ while stage in (1, 2, 3, 4):
         prev_stage = stage
         error_action = "exit"
     elif user_input.lower == "COMMAND:go_next_stage":
-        passed = test(stage)
+        passed = validate_json_file(stage)
         if passed:
             stage =+ 1
             _flag_first_time = True
@@ -236,7 +259,7 @@ while stage in (1, 2, 3, 4):
         
         relevant_memory = mem.get_context(user_input)
         response = agent_turn(user_input_for_turn=user_input, system_prompt_for_the_turn=system_prompt, memory=relevant_memory)
-        mem.input_context(response, 0)
+        mem.input_context(str(response), 0)
         print("[green]AI answers: [/green]")
         print(f"{response}")
 
@@ -265,7 +288,7 @@ while stage in (1, 2, 3, 4):
 
         relevant_memory = mem.get_context(user_input)
         response = agent_turn(user_input_for_turn=user_input, system_prompt_for_the_turn=system_prompt, memory=relevant_memory)
-        mem.input_context(response, 0)
+        mem.input_context(str(response), 0)
         print("[green]AI answers: [/green]")
         print(f"{response}")
 
@@ -281,15 +304,14 @@ while stage in (1, 2, 3, 4):
     if error_action is not None:
         if error_action == "exit":
             print("[red]shutting down.[/red]")
-            print("[red]FEATURE OF SAVING PROGRESS NOT IMPLEMENTED[/red]")
-            print("[red]You sure you want to exit[/red]")
-            print("[red][bold]???[/bold][/red]")
-            if input("Answer: ").strip().lower() in ("no", "n", "nope", "never", "nah"):
-                error_action = None
+            print("Would you like to save the progress ?")
+            print("[green]Yes[/green] / [red]no[/red]")
+            if input(": ").strip().lower() in ("yes", "y", ""):
+                save()
             else:
-                print("[red]Due to the fact that this programm is still NOT FINISHED, and NOTHING IS IMPLEMENTED[/red]")
-                print("[red]I just exit and thats it.[/red]")
-                sys.exit("Yep, just exiting")
-else:
-    sys.exit("WTF HAPPENED HERE?")
-
+                print("[yellow]are you sure you dont want to save?[/yellow]")
+                if input(": ").strip().lower() in ("yes", "y", ""):
+                    print("Not saving")
+                else:
+                    print("saving")
+                    save()
