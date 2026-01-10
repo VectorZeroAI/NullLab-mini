@@ -8,8 +8,8 @@ NOT import config. That would polute global namespace and generally add memory o
 
 # ai_chat.py values:
 
-api_key = "set your API key here"
-model = "set your model here"
+api_key = ""
+model = ""
 max_tool_runs = 10
 
 # AI parameters: 
