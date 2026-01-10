@@ -76,6 +76,11 @@ Blueprint Json contains the specification of the target programm. It specifies w
 
 ## AI based JSON to actual code compiler:
 
+'for every step in plan, execute based on blueprints specification. '
+
+So, kinda like using plan.json as the compile time specifications, while blueprint.json is the sourse code. So, it generally feels like its a real compiler system. 
+Based on the fact that the user can write the blueprint.json and plan.json themself ... I should definetly make the compiler part detachable, so I can test and tweak it. 
+That also is actually already a projekt worth creating. 
 
 
 # Notes
