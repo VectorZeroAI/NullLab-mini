@@ -359,7 +359,21 @@ while stage in (1, 2, 3, 4):
         print(f"{response}")
 
     elif stage == 4:
-        pass
+        if _flag_first_time:
+            system_prompt = Config.global_ai_instructions_for_stage_1_and_3 + """
+            Your task is to validate that the existing plan.json is specifically what the user intended it to be
+            and that it is capable of correctly building the application described in blueprint.json
+            """
+        else:
+            pass
+
+        if system_prompt is None:
+            raise RuntimeWarning("System prompt was not set correctly ! ")
+        relevant_memory = mem.get_context(user_input)
+        response = agent_turn(user_input_for_turn=user_input, system_prompt_for_the_turn=system_prompt, memory=relevant_memory)
+        mem.input_context(str(response), 0)
+        print("[green]AI answers: [/green]")
+        print(f"{response}")
 
     # ERROR ACTION handling here. This is kinda the shit that should handle everything. 
     if error_action is not None:
