@@ -51,10 +51,13 @@ def state0() -> bool | None:
     This state loads all the actual dependancies, as well as interactivly initialises the programm. 
 
     TODO: FUTURE: add a configuration option that loads you into a projekt instantly. 
+
+    state0 also downloads the Nulllab-mini compiler, as that thing is now a separate repo!
     """
     while True:
         
         #!!! Now comes the projekt init
+        # TODO: add the compiler downloading code
         
         # This is the interactive projekt initialisation, with per step retry via the nested loops. 
         # I think more people should do this kind of stuff more often in their programms. 
@@ -83,6 +86,24 @@ def state0() -> bool | None:
             else:
                 print("[red]No confirmation recived. Aborting one step back.[/red]")
                 continue
+
+        # The Nulllab-compiler download stage
+        while True:
+            import subprocess
+            try:
+                subprocess.run(f"git clone http://github.com/VectorZeroAI/Nulllab-compiler {input_dir}", shell=True)
+            except subprocess.SubprocessError as e:
+                print("[red] download of Nulllab-compiler failed [/red]")
+                print(e)
+                print("would you like to retry?")
+                if input("Y/n : ").lower().strip() in ("yes", "y", "yep", ""):
+                    continue
+                else:
+                    print("Impossible to proseed without the compiler: failing ...")
+                    raise RuntimeError("failed to download tje Nulllab-compiler")
+            else:
+                print("assuming Nulllab-compiler is installed.")
+                break
 
         while True:
             
