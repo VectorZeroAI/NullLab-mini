@@ -31,8 +31,10 @@ from rich import print
 
 print("initialising NullLab-mini")
 
-base_dir: object | None = None
+projekt_dir: object | None = None
 state: int = 0
+
+BASE = Path(__file__).resolve().parent
 
 projekt_parts: list[str] = ["plan.json", "blueprint.json", "metadata.json", "config.py", "bugs.json", "projekt.db", "memory.json", "memory.db"]
 
@@ -65,13 +67,13 @@ def state0() -> bool | None:
 
         while True:                                                                         
             
-            global base_dir 
+            global projekt_dir 
             
             input_dir: str = input("input path to work directory.")     
             print(f"initialising at {input_dir}")
-            base_dir = Path(input_dir)
+            projekt_dir = Path(input_dir)
             
-            if base_dir.exists():
+            if projekt_dir.exists():
                 print("[green]directory found. Continuing[/green]")
                 pass
             else:
@@ -91,7 +93,7 @@ def state0() -> bool | None:
         while True:
             import subprocess
             try:
-                subprocess.run("git clone http://github.com/VectorZeroAI/Nulllab-compiler", shell=True)
+                subprocess.run("git clone http://github.com/VectorZeroAI/Nulllab-compiler {BASE}/", shell=True)
             except subprocess.SubprocessError as e:
                 print("[red] download of Nulllab-compiler failed [/red]")
                 print(e)
@@ -100,7 +102,7 @@ def state0() -> bool | None:
                     continue
                 else:
                     print("Impossible to proseed without the compiler: failing ...")
-                    raise RuntimeError("failed to download tje Nulllab-compiler")
+                    raise RuntimeError("failed to download tje Nulllab-compiler") from e
             else:
                 print("assuming Nulllab-compiler is installed.")
                 break
@@ -113,7 +115,7 @@ def state0() -> bool | None:
             flag_file_not_found = None
 
             for name in projekt_parts:
-                file_path = base_dir / name
+                file_path = projekt_dir / name
                 if file_path.exists() and file_path.is_file():
                     pass
                 else:
@@ -131,7 +133,7 @@ def state0() -> bool | None:
                 if input("initialise an empty projekt? Y/n").lower().strip() in ("y", "yes", ""):
                     
                     for file in projekt_parts:
-                        file_path = base_dir / file
+                        file_path = projekt_dir / file
                         if not file_path.exists():
                             file_path.touch()
                             print(f"[green]created file {file}[/green]")
