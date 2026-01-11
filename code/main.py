@@ -91,7 +91,7 @@ def state0() -> bool | None:
         while True:
             import subprocess
             try:
-                subprocess.run(f"git clone http://github.com/VectorZeroAI/Nulllab-compiler {input_dir}", shell=True)
+                subprocess.run("git clone http://github.com/VectorZeroAI/Nulllab-compiler", shell=True)
             except subprocess.SubprocessError as e:
                 print("[red] download of Nulllab-compiler failed [/red]")
                 print(e)
