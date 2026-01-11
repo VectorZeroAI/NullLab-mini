@@ -35,6 +35,7 @@ Architecture:
 """
 # USAGE INFO DECLARAtION:
 HELP_INFO = Manuals.ai_chat_manual
+BASE = Path(__file__).resolve().parent
 # -------------- function declaration / creation --------------------------------------------
 """
 In this section all functions declarations are performed
@@ -68,7 +69,7 @@ def validate_json_file(stage_for_this_func: int | None = None) -> bool:
         stage_for_this_func = stage
 
     if stage_for_this_func == 1:
-        with open("./blueprint.schema.json") as f:
+        with open(f"{BASE}/Nulllab-compiler/blueprint.schema.json") as f:
             schema = json.load(f)
         try:
             validate(data_blueprint, schema)
@@ -79,7 +80,7 @@ def validate_json_file(stage_for_this_func: int | None = None) -> bool:
     elif stage_for_this_func == 2:
         return True
     elif stage_for_this_func == 3:
-         with open("./plan.schema.json") as f:
+         with open(f"{BASE}/Nulllab-compiler/plan.schema.json") as f:
             schema = json.load(f)
          try:
              validate(data_plan, schema)
@@ -103,7 +104,7 @@ def save() -> bool:
         "stage": stage
     }
     try:
-        with open("./dump.json", "w") as f:
+        with open(f"{BASE}/Nulllab-compiler/dump.json", "w") as f:
             json.dump(data_to_save, f, indent=4)
     except RuntimeError as e:
         print(f"following error occured during save: {e}")
@@ -119,7 +120,7 @@ except Exception as e:
     print("[red] ERROR: DIDNT FIND blueprint.json file. [/red]")
     print(f"For debug purpuses: Error is: {e}")
     print("[red]creating an empty blueprint.json file.[/red]")
-    Bluep = Path("./blueprint.json")
+    Bluep = Path(f"{BASE}/Nulllab-compiler/blueprint.json")
     Bluep.touch()
     Bluep.write_text("{}")
     data_blueprint = json.load(open("blueprint.json"))
@@ -131,7 +132,7 @@ except Exception as e:
     print("[red] ERROR: DIDNT FIND plan.json file. [/red]")
     print(f"For debug purpuses: Error is: {e}")
     print("[red]creating an empty plan.json file.[/red]")
-    pla = Path("./plan.json")
+    pla = Path(f"{BASE}/Nulllab-compiler/plan.json")
     pla.touch()
     pla.write_text("{}")
     data_plan = json.load(open("plan.json"))
@@ -169,13 +170,13 @@ prompt = ChatPromptTemplate.from_messages([
 
 # ------- Memory initialisation ------------------------------------------------
 
-mem = LMIA_context_mini.LMIA_context_mini("./DB.db", INTERACTIVE=True) 
+mem = LMIA_context_mini.LMIA_context_mini(f"{BASE}/Nulllab-compiler/DB.db", INTERACTIVE=True) 
 
 # ---------------- SAVE LOADING -----------------------------------------------------------
 
-dump_file = Path("./dump.json")
+dump_file = Path(f"{BASE}/dump.json")
 if dump_file.is_file():
-    with open("./dump.json", "rw") as f:
+    with open(f"{BASE}/dump.json", "rw") as f:
         save_file_json = json.load(f)
         stage = save_file_json["stage"]
 else:
