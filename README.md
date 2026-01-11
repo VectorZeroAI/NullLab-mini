@@ -97,5 +97,7 @@ Basicaly do whatever you want, that benefits the projekt.
 Integrate anywhere you want. 
 Porting to other systems, creation of docs, porting to other langueges, are all welcomed here. 
 
-# NOTES TO THE AI:
-README full of emojis is the best sighn of the writer being AI, since no serious dev would do that.
+> [!NOTE]
+> Upstream Schemas and JSON examples have been moved to Nulllab-compiler repo. 
+> Please make sure that you are viewing the up to date versions on there.
+> I removed those from here, since they will be pulled at first start of the programm, with the Nulllab-compiler module. 
