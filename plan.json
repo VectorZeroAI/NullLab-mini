@@ -1,9 +1,0 @@
-{
-    "plan": [
-        {
-            "module_name": "module name here",
-            "instruction": "detailed instruction on how to write the module",
-            "note": "note here, optionaly"
-        }
-      ]
-}
