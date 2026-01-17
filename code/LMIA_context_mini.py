@@ -13,6 +13,9 @@ from rich import print
 
 print("imports finished with no errors. ")
 
+class Origin:
+    AI = 0
+    USER = 1
 
 class LMIA_context_mini:
     """
@@ -23,13 +26,6 @@ class LMIA_context_mini:
     interactive is bool telling wether the enviroment of execution is interactive or not. 
     Setting to true may allow for interactive error handling, while setting to False removes those. 
     """
-    class Origin(IntEnum):
-        """
-        Enum for the input context function, as to not need to remember magic numbers 1 and 0.
-        """
-        Ai = 0
-        User = 1
-    
     def __init__(self, DB_PATH: str | None = None, INTERACTIVE: bool | None = None, LOGS: bool | None = None):
         """
     Instanse constructor. 
@@ -133,9 +129,13 @@ class LMIA_context_mini:
         """
     The method to input content into the memory. 
     prompt is the content to input. 
-    origin is an enum of Origin class objekt. 
-    asign via .origin.ai/user
+    There is a class Origin, whose parameters AI and USER correspond to the USER and AI Origins. 
+    So you can write Origin.AI or Origin.USER , or just 0 or 1. 
+    AI = 0
+    USER = 1
         """
+        USER: int = 1
+        AI: int = 0
         def log_print(text: str):
             """
             Prints if logs is true
@@ -146,14 +146,10 @@ class LMIA_context_mini:
                 return
 
         log_print(f"prompt {prompt} recived")
-        if isinstance(origin, IntEnum):
-            origin = int(origin)
-        elif isinstance(origin, int):
-            pass
 
         log_print("perofrming SQL operations")
 
-        if origin == 1: 
+        if origin == USER: 
             self.curr.execute("INSERT INTO memory (user_prompt) VALUES (?)", (prompt,))
             self.embedded_prompt = self.embedder.encode(prompt, normalize_embeddings=True)  
             self.embedded_prompt = self.embedded_prompt.astype(np.float32).tobytes()
@@ -167,7 +163,7 @@ class LMIA_context_mini:
                 """, (self.embedded_prompt,))
             # COMMIT IS DONE OUTSIDE THE IF STATEMENT
             log_print("successfully prepared embedding and user prompt into the corresponding places inside the SQLite DB")
-        elif origin == 0:
+        elif origin == AI:
             self.curr.execute(""" 
                 UPDATE memory
                 SET ai_response = ?
