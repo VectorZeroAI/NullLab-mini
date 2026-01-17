@@ -3,7 +3,6 @@
 LMIA context plugin, mini edition
 Version 0.2
 """
-from enum import IntEnum
 from pathlib import Path
 from sentence_transformers import SentenceTransformer
 import sqlite3
@@ -125,7 +124,7 @@ class LMIA_context_mini:
 
         log_print("[green]construction of the class completed with.[/green]")
 
-    def input_context(self, prompt: str, origin: int | IntEnum):
+    def input_context(self, prompt: str, origin: int ):
         """
     The method to input content into the memory. 
     prompt is the content to input. 
