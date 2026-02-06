@@ -219,7 +219,7 @@ def state1():
                     f"echo '{input_text}'", "C-m"
                 ])
 
-        def PlanJsonLoop():
+        def PlanJsonLoop() -> None:
             global previous_text_plan
             global currrent_text_plan
             while not JSON_PRINTERS_STOP:
@@ -230,7 +230,7 @@ def state1():
                     state_1_json_print(currrent_text_plan)
             print("json_printer thread for PlanJson has stopped")
 
-        def BlueprintJsonLoop():
+        def BlueprintJsonLoop() -> None:
             global previous_text_blueprint
             global current_text_bluep
             while not JSON_PRINTERS_STOP:
@@ -246,50 +246,43 @@ def state1():
         print(f" The files that you are getting displayed are located at [green] {BASE}/Nulllab-compiler/blueprint.json [/green] \n")
         print(f" and at [green]{BASE}/Nulllab-compiler/blueprint.json [/green] \n")
         print(f" To see the [red]BEAUTIFUL[/red] interface, go to the tmux session here {TMUX_SESSION_NAME}")
-        
+
+        BlueprintJson = Path(f"{BASE}/Nulllab-compiler/blueprint.json")
+        PlanJson = Path(f"{BASE}/Nulllab-compiler/plan.json")
+
         while state == 1:
 
             sleep(1)
 
-            try:
-
-                BlueprintJson = Path(f"{BASE}/Nulllab-compiler/blueprint.json")
-                previous_text_blueprint = " "
-
-            except FileNotFoundError:
-                _flag_Blueprint_Json_File_not_found = True
-
+            if BlueprintJson.exists():
+                _flag_blueprint_json_found = True
             else:
-                _flag_Blueprint_Json_File_not_found = False
+                _flag_blueprint_json_found = False
 
-            try:
-
-                PlanJson = Path(f"{BASE}/Nulllab-compiler/blueprint.json")
-                previous_text_plan = " "
-
-            except FileNotFoundError:
-                _flag_Plan_Json_File_not_found = True
-
+            if PlanJson.exists():
+                _flag_plan_json_found = True
             else:
-                _flag_Plan_Json_File_not_found = False
+                _flag_plan_json_found = False
 
-            if _flag_Blueprint_Json_File_not_found or _flag_Plan_Json_File_not_found:
+            # ----
+
+            if not _flag_plan_json_found and not _flag_blueprint_json_found:
                 continue
 
-            elif not _flag_Blueprint_Json_File_not_found:
+            if _flag_plan_json_found:
                 threading.Thread(target=PlanJsonLoop, daemon=True).start()
 
-            elif not _flag_Plan_Json_File_not_found:
+            if _flag_blueprint_json_found:
                 threading.Thread(target=BlueprintJsonLoop, daemon=True).start()
 
-            elif not _flag_Blueprint_Json_File_not_found and not _flag_Plan_Json_File_not_found:
+            else:
                 sleep(1)
                 # FIXME : MAKE THE LOOP BREAKAGE WORK !!!
                 # The issue with breakage is that state is never set to anything other then 1 .
                 # Basically I never implemented the shutdown logic for the state. 
                 # TODO: Implement the shutdown logic. 
         else:
-            JSON_PRINTERS_STOP = True
+            JSON_PRINTERS_STOP = True # FIXME : This here also needs to be revised
 
 
 
