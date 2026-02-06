@@ -1,4 +1,4 @@
-#!/usr/env/python3
+#!/usr/bin/env python3
 """
 main.py of NullLab-mini projekt.
 This is my Structured auto coder projekt. 
@@ -31,7 +31,7 @@ from rich import print
 
 print("initialising NullLab-mini")
 
-projekt_dir: object | None = None
+projekt_dir: Path | None = None
 state: int = 0
 
 BASE = Path(__file__).resolve().parent
@@ -93,7 +93,7 @@ def state0() -> bool | None:
         while True:
             import subprocess
             try:
-                subprocess.run("git clone http://github.com/VectorZeroAI/Nulllab-compiler {BASE}/", shell=True)
+                subprocess.run(f"git clone http://github.com/VectorZeroAI/Nulllab-compiler {BASE}/", shell=True)
             except subprocess.SubprocessError as e:
                 print("[red] download of Nulllab-compiler failed [/red]")
                 print(e)
@@ -102,7 +102,7 @@ def state0() -> bool | None:
                     continue
                 else:
                     print("Impossible to proseed without the compiler: failing ...")
-                    raise RuntimeError("failed to download tje Nulllab-compiler") from e
+                    raise RuntimeError("failed to download the Nulllab-compiler") from e
             else:
                 print("assuming Nulllab-compiler is installed.")
                 break
@@ -123,13 +123,13 @@ def state0() -> bool | None:
                     if flag_file_not_found is None: 
                         flag_file_not_found = 0
                     else:
-                        flag_file_not_found =+ 1
+                        flag_file_not_found += 1
                     
             
             # if True, break, if false, pass.
             if flag_file_not_found is not None:
                 flag_retry = False
-                print(f"[red]Projekt not found on {dir}[/red]")
+                print(f"[red]Projekt not found on {projekt_dir}[/red]")
                 if input("initialise an empty projekt? Y/n").lower().strip() in ("y", "yes", ""):
                     
                     for file in projekt_parts:
