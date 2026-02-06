@@ -244,7 +244,7 @@ def state1():
         JSON_PRINTERS_STOP: bool = False
 
         print(f" The files that you are getting displayed are located at [green] {BASE}/Nulllab-compiler/blueprint.json [/green] \n")
-        print(f" and at [green]{BASE}/Nulllab-compiler/blueprint.json [/green] \n")
+        print(f" and at [green]{BASE}/Nulllab-compiler/plan.json [/green] \n")
         print(f" To see the [red]BEAUTIFUL[/red] interface, go to the tmux session here {TMUX_SESSION_NAME}")
 
         BlueprintJson = Path(f"{BASE}/Nulllab-compiler/blueprint.json")
