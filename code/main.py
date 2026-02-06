@@ -27,7 +27,8 @@ I try to document as much as I can, since this makes the code fat better.
 
 from pathlib import Path
 import subprocess
-from rich import print
+from threading import currentThread
+from rich import print, print_json
 
 print("initialising NullLab-mini")
 
@@ -47,7 +48,7 @@ print("[green]early initialisation complete.[/green]")
 
 
 
-def state0() -> bool | None:   
+def state0() -> bool | None:
     """
     State0, the init state. 
     This state loads all the actual dependancies, as well as interactivly initialises the programm. 
@@ -184,38 +185,110 @@ def state1():
     Done for today!!!
     """
     while True:
-        print("initialising tmux session")
-        tmux_session_name: str = "NullLab_mini_session"
-        print(f"tmux session name : {tmux_session_name}")
+        print("Initialising tmux session")
+        TMUX_SESSION_NAME: str = "NullLab_mini_session"
+        print(f"Tmux session name : {TMUX_SESSION_NAME}")
         subprocess.run([
-            "tmux", "new-session", "-d", "-s", f"{tmux_session_name}", "-n", "main"
+            "tmux", "new-session", "-d", "-s", f"{TMUX_SESSION_NAME}", "-n", "main"
             ])
 
         subprocess.run([
-            "tmux", "split-window", "-v", "-t", f"{tmux_session_name}:main"
+            "tmux", "split-window", "-v", "-t", f"{TMUX_SESSION_NAME}:main"
             ])
         subprocess.run([
             "tmux", "send-keys",
-            "-t", f"{tmux_session_name}:main.0",
+            "-t", f"{TMUX_SESSION_NAME}:main.0",
             "python3 ai_chat.py",
             "C-m"
         ])      # This here runs the ai_chat.py app into the session on the side.
         # subprocess.run(["tmux", "<tmux-command>", "-t", "<target>", "<shell command>"])    
         # This is the template for tmux command launching. 
+
         global state
+        global previous_text_blueprint
+        global previous_text_plan
+        global currrent_text_plan
+        global current_text_bluep
+
+        from time import sleep
+
+        import threading
+
+        def state_1_json_print(input_text: str) -> None:
+            subprocess.run([
+                    "tmux", "send-keys", "-t", f"{TMUX_SESSION_NAME}:main.1",
+                    f"echo '{input_text}'", "C-m"
+                ])
+
+        def PlanJsonLoop():
+            global previous_text_plan
+            global currrent_text_plan
+            while not JSON_PRINTERS_STOP.is_set():
+                sleep(1)
+                currrent_text_plan = PlanJson.read_text()
+                if previous_text_plan != currrent_text_plan:
+                    previous_text_plan = currrent_text_plan
+                    state_1_json_print(currrent_text_plan)
+            print("json_printer thread for PlanJson has stopped")
+
+        def BlueprintJsonLoop():
+            global previous_text_blueprint
+            global current_text_bluep
+            while not JSON_PRINTERS_STOP.is_set():
+                sleep(1)
+                current_text_bluep = BlueprintJson.read_text()
+                if previous_text_blueprint != current_text_bluep:
+                    previous_text_blueprint = current_text_bluep
+                    state_1_json_print(current_text_bluep)
+            print("json_printer thread for BlueprintJson has stopped")
+
+        JSON_PRINTERS_STOP = threading.Event()
+
+        print(f" The files that you are getting displayed are located at [green] {BASE}/Nulllab-compiler/blueprint.json [/green] \n")
+        print(f" and at [green]{BASE}/Nulllab-compiler/blueprint.json [/green] \n")
+        print(f" To see the [red]BEAUTIFUL[/red] interface, go to the tmux session here {TMUX_SESSION_NAME}")
+        
         while state == 1:
-            pass
-        #TODO: FINISH THIS BLOCK. 
-            """
-        this block must check for changes in files blueprint.json and plan.json, 
-        via watchdog
-        and update the view in the second half of the screen. 
-        [UPDATE]
-        After long considerations, I have finaly found a solution. 
-        Use the watchdog library and from rich import print_json .... that is good enough. 
-        For any changes, the user should just open the files in an editor of their choise. 
-            """
-        #TODO: Create variables for the user to not need to know the path to the files. 
+
+            sleep(1)
+
+            try:
+
+                BlueprintJson = Path(f"{BASE}/Nulllab-compiler/blueprint.json")
+                previous_text_blueprint = " "
+
+            except FileNotFoundError:
+                _flag_Blueprint_Json_File_not_found = True
+
+            else:
+                _flag_Blueprint_Json_File_not_found = False
+
+            try:
+
+                PlanJson = Path(f"{BASE}/Nulllab-compiler/blueprint.json")
+                previous_text_plan = " "
+
+            except FileNotFoundError:
+                _flag_Plan_Json_File_not_found = True
+
+            else:
+                _flag_Plan_Json_File_not_found = False
+
+            if _flag_Blueprint_Json_File_not_found or _flag_Plan_Json_File_not_found:
+                continue
+
+            elif not _flag_Blueprint_Json_File_not_found:
+                threading.Thread(target=PlanJsonLoop)
+
+            elif not _flag_Plan_Json_File_not_found:
+                threading.Thread(target=BlueprintJsonLoop)
+
+            elif not _flag_Blueprint_Json_File_not_found and not _flag_Plan_Json_File_not_found:
+                break
+        else:
+            JSON_PRINTERS_STOP.set()
+
+
 
 
 # --------------------------------------------------------------------------------
