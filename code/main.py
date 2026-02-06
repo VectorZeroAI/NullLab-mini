@@ -27,8 +27,7 @@ I try to document as much as I can, since this makes the code fat better.
 
 from pathlib import Path
 import subprocess
-from threading import currentThread
-from rich import print, print_json
+from rich import print
 
 print("initialising NullLab-mini")
 
@@ -223,7 +222,7 @@ def state1():
         def PlanJsonLoop():
             global previous_text_plan
             global currrent_text_plan
-            while not JSON_PRINTERS_STOP.is_set():
+            while not JSON_PRINTERS_STOP:
                 sleep(1)
                 currrent_text_plan = PlanJson.read_text()
                 if previous_text_plan != currrent_text_plan:
@@ -234,7 +233,7 @@ def state1():
         def BlueprintJsonLoop():
             global previous_text_blueprint
             global current_text_bluep
-            while not JSON_PRINTERS_STOP.is_set():
+            while not JSON_PRINTERS_STOP:
                 sleep(1)
                 current_text_bluep = BlueprintJson.read_text()
                 if previous_text_blueprint != current_text_bluep:
@@ -242,7 +241,7 @@ def state1():
                     state_1_json_print(current_text_bluep)
             print("json_printer thread for BlueprintJson has stopped")
 
-        JSON_PRINTERS_STOP = threading.Event()
+        JSON_PRINTERS_STOP: bool = False
 
         print(f" The files that you are getting displayed are located at [green] {BASE}/Nulllab-compiler/blueprint.json [/green] \n")
         print(f" and at [green]{BASE}/Nulllab-compiler/blueprint.json [/green] \n")
@@ -278,15 +277,19 @@ def state1():
                 continue
 
             elif not _flag_Blueprint_Json_File_not_found:
-                threading.Thread(target=PlanJsonLoop)
+                threading.Thread(target=PlanJsonLoop, daemon=True).start()
 
             elif not _flag_Plan_Json_File_not_found:
-                threading.Thread(target=BlueprintJsonLoop)
+                threading.Thread(target=BlueprintJsonLoop, daemon=True).start()
 
             elif not _flag_Blueprint_Json_File_not_found and not _flag_Plan_Json_File_not_found:
-                break
+                sleep(1)
+                # FIXME : MAKE THE LOOP BREAKAGE WORK !!!
+                # The issue with breakage is that state is never set to anything other then 1 .
+                # Basically I never implemented the shutdown logic for the state. 
+                # TODO: Implement the shutdown logic. 
         else:
-            JSON_PRINTERS_STOP.set()
+            JSON_PRINTERS_STOP = True
 
 
 
