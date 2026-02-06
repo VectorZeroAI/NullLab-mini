@@ -250,39 +250,31 @@ def state1():
         BlueprintJson = Path(f"{BASE}/Nulllab-compiler/blueprint.json")
         PlanJson = Path(f"{BASE}/Nulllab-compiler/plan.json")
 
-        while state == 1:
+        _flag_Plan_thread_started = False
+        _flag_Blueprint_thread_started = False
 
+        while state == 1:
             sleep(1)
 
-            if BlueprintJson.exists():
-                _flag_blueprint_json_found = True
-            else:
-                _flag_blueprint_json_found = False
+            if _flag_Blueprint_thread_started and _flag_Plan_thread_started:
+                pass 
+            # FIXME : MAKE THE LOOP BREAKAGE WORK,
+            # The issue with breakage is that state is never set to anything other then 1 .
+            # Basically I never implemented the shutdown logic for the state. 
+            # TODO: Implement the shutdown logic. 
 
-            if PlanJson.exists():
-                _flag_plan_json_found = True
-            else:
-                _flag_plan_json_found = False
+            if not _flag_Blueprint_thread_started: 
+                if BlueprintJson.exists():
+                    threading.Thread(target=BlueprintJsonLoop, daemon=True).start()
+                    _flag_Blueprint_thread_started = True
 
-            # ----
+            if not _flag_Plan_thread_started: 
+                if PlanJson.exists():
+                    threading.Thread(target=PlanJsonLoop, daemon=True).start()
+                    _flag_Plan_thread_started = True
 
-            if not _flag_plan_json_found and not _flag_blueprint_json_found:
-                continue
-
-            if _flag_plan_json_found:
-                threading.Thread(target=PlanJsonLoop, daemon=True).start()
-
-            if _flag_blueprint_json_found:
-                threading.Thread(target=BlueprintJsonLoop, daemon=True).start()
-
-            else:
-                sleep(1)
-                # FIXME : MAKE THE LOOP BREAKAGE WORK !!!
-                # The issue with breakage is that state is never set to anything other then 1 .
-                # Basically I never implemented the shutdown logic for the state. 
-                # TODO: Implement the shutdown logic. 
         else:
-            JSON_PRINTERS_STOP = True # FIXME : This here also needs to be revised
+            JSON_PRINTERS_STOP = True # TODO : This here also needs to be revised
 
 
 
